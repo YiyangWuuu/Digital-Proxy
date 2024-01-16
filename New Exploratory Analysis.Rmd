@@ -1,0 +1,1642 @@
+---
+title: "Exploratory Analyasis"
+author: "Wu Yiyang"
+date: "2023-12-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(corrplot)
+library(dplyr)
+```
+
+
+
+```{r}
+raw_digital_proxy <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/US_SG_dataset.csv")
+cleaned_data4<-read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/cleaned_data4.csv")
+cleaned_data5<-read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/cleaned_data5.csv")
+cleaned_data6<-read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/cleaned_data6.csv")
+Help_Physical_care<-read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/Help_Physical_care.csv")
+Help_Medical_care<- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/Help_Medical_care.csv")
+High_Stake<- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/High_Stake.csv")
+Low_Stake<- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/Low_Stake.csv")
+```
+
+
+
+# Distribution
+# Demographics
+
+
+```{r}
+filterCountryData <- function(xyz) { # create a function with the name my_function
+  test<-raw_digital_proxy%>%
+    filter(Country==xyz)%>%
+  return(test)
+}
+digital_proxyUS <- filterCountryData("US")
+digital_proxySG <- filterCountryData("SG")
+
+# view(digital_proxyUS)
+```
+
+
+```{r}
+obs_dpUS <- nrow(digital_proxyUS)
+var_dpUS <- ncol(digital_proxyUS)
+print(obs_dpUS)
+print(var_dpUS)
+
+obs_dpSG <- nrow(digital_proxySG)
+var_dpSG <- ncol(digital_proxySG)
+print(obs_dpSG)
+print(var_dpSG)
+```
+
+
+```{r}
+#digital_proxyUS <- digital_proxyUS %>%select(Country, everything())
+
+#digital_proxySG <- digital_proxySG %>%select(Country, everything())
+```
+
+
+
+## Age (Uniform Distribution)
+```{r}
+par(mfrow = c(2, 2))
+Age<-as.numeric(digital_proxyUS$Age)
+
+# histogram of the age variable
+drawHistogram <- function(data,mainTitle,xlabel) { # create a function with the name my_function
+  hist(data, main = mainTitle, xlab = xlabel)
+}
+drawHistogram(digital_proxyUS$Age,"Age distributionUS","Age")
+drawHistogram(digital_proxySG$Age,"Age distributionSG","Age")
+
+# density plot of the age variable
+drawDensity<- function(data,mainTitle,xlabel) { # create a function with the name my_function
+    plot(density(data), main = mainTitle, xlab = xlabel)
+}
+drawDensity(digital_proxyUS$Age,"Age distributionUS","Age")
+drawDensity(digital_proxySG$Age,"Age distributionSG","Age")
+
+
+# boxplot
+drawboxplot <- function(data,mainTitle,xlabel) { # create a function with the name my_function
+  boxplot(data, main = mainTitle, xlab = xlabel)
+}
+drawboxplot(digital_proxyUS$Age,"Age distributionUS","Age")
+drawboxplot(digital_proxySG$Age,"Age distributionSG","Age")
+
+
+# QQ plot (whether normal)
+drawQQplot <- function(data,mainTitle,xlabel) { # create a function with the name my_function
+  qqnorm(data, main = mainTitle, xlab = xlabel)
+  qqline(data)
+}
+drawQQplot(digital_proxyUS$Age,"Age distributionUS","Age")
+drawQQplot(digital_proxySG$Age,"Age distributionSG","Age")
+
+
+#summary age
+summarize <- function(data) {
+  summary_stats <- c(
+    Mean = mean(data),
+    Median = median(data),
+    Min = min(data),
+    Max = max(data),
+    Var = var(data),
+    SD = sd(data)
+  )
+  return(summary_stats)
+}
+summarize(digital_proxyUS$Age)
+summarize(digital_proxySG$Age)
+```
+
+
+
+```{r}
+library(e1071)
+
+# Assuming you have a numerical variable in a dataset called 'data'
+skew <- skewness(digital_proxyUS$Age)
+kurt <- kurtosis(digital_proxyUS$Age)
+```
+
+
+## Housing(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$Housing)
+
+par(mfrow = c(1, 2))
+Housing<-as.factor(digital_proxyUS$Housing)
+
+
+# number of occurance
+printtable <- function(data) { # create a function with the name my_function
+  table(data)
+}
+printtable(digital_proxyUS$Housing)
+printtable(digital_proxySG$Housing)
+
+
+# barplot
+drawbarplot <- function(data,mainTitle,xlabel) { # create a function with the name my_function
+  barplot(table(data), main = mainTitle, xlab = xlabel)
+}
+drawbarplot(digital_proxyUS$Housing,"Bar Plot of Housing US","Housing")
+drawbarplot(digital_proxySG$Housing,"Bar Plot of Housing SG","Housing")
+
+
+# pie chart
+drawpieplot <- function(data,mainTitle,xlabel) { # create a function with the name my_function
+  pie(table(data), main = mainTitle, xlab = xlabel)
+}
+drawpieplot(digital_proxyUS$Housing,"Pie Chart of Housing US","Housing")
+drawpieplot(digital_proxySG$Housing,"Pie Chart of Housing SG","Housing")
+
+
+# percentage of each categories
+percentagehousing <- function(data) { # create a function with the name my_function
+  prop.table(table(data))
+}
+percentagehousing(digital_proxyUS$Housing)
+percentagehousing(digital_proxySG$Housing)
+
+
+```
+
+
+
+## Income(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$Income)
+
+par(mfrow = c(1, 2))
+Income<-as.factor(digital_proxyUS$Income)
+
+# number of occurance
+printtable(digital_proxyUS$Income)
+printtable(digital_proxySG$Income)
+
+# barplot
+drawbarplot(digital_proxyUS$Income,"Bar Plot of Income US","Income")
+drawbarplot(digital_proxySG$Income,"Bar Plot of Income SG","Income")
+
+# pie chart
+drawpieplot(digital_proxyUS$Income,"Pie Chart of Income US","Income")
+drawpieplot(digital_proxySG$Income,"Pie Chart of Income SG","Income")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Income)
+percentagehousing(digital_proxySG$Income)
+
+
+```
+
+
+
+## Gender(Bernoulli Distribution)
+
+```{r}
+summary(digital_proxyUS$Gender)
+
+par(mfrow = c(1, 2))
+Gender<-as.factor(digital_proxyUS$Gender)
+
+# number of occurance
+printtable(digital_proxyUS$Gender)
+printtable(digital_proxySG$Gender)
+
+# barplot
+drawbarplot(digital_proxyUS$Gender,"Bar Plot of Gender US","Gender")
+drawbarplot(digital_proxySG$Gender,"Bar Plot of Gender SG","Gender")
+
+# pie chart
+drawpieplot(digital_proxyUS$Gender,"Pie Chart of Gender US","Gender")
+drawpieplot(digital_proxySG$Gender,"Pie Chart of Gender SG","Gender")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Gender)
+percentagehousing(digital_proxySG$Gender)
+
+
+```
+
+
+## Marital(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$Marital)
+
+par(mfrow = c(1,2))
+Marital<-as.factor(digital_proxyUS$Marital)
+
+# number of occurance
+printtable(digital_proxyUS$Marital)
+printtable(digital_proxySG$Marital)
+
+# barplot
+drawbarplot(digital_proxyUS$Marital,"Bar Plot of Marital US","Marital")
+drawbarplot(digital_proxySG$Marital,"Bar Plot of Marital SG","Marital")
+
+# pie chart
+drawpieplot(digital_proxyUS$Marital,"Pie Chart of Marital US","Marital")
+drawpieplot(digital_proxySG$Marital,"Pie Chart of Marital SG","Marital")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Marital)
+percentagehousing(digital_proxySG$Marital)
+
+```
+
+
+## Ethnicity(Multinomial Distribution)
+
+```{r}
+
+summary(digital_proxyUS$Ethnicity)
+
+par(mfrow = c(1,2))
+Ethnicity<-as.factor(digital_proxyUS$Ethnicity)
+
+# number of occurance
+printtable(digital_proxyUS$Ethnicity)
+printtable(digital_proxySG$Ethnicity)
+
+# barplot
+drawbarplot(digital_proxyUS$Ethnicity,"Bar Plot of Ethnicity US","Ethnicity")
+drawbarplot(digital_proxySG$Ethnicity,"Bar Plot of Ethnicity SG","Ethnicity")
+
+# pie chart
+drawpieplot(digital_proxyUS$Ethnicity,"Pie Chart of Ethnicity US","Ethnicity")
+drawpieplot(digital_proxySG$Ethnicity,"Pie Chart of Ethnicity SG","Ethnicity")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Ethnicity)
+percentagehousing(digital_proxySG$Ethnicity)
+
+unique(digital_proxyUS$EthnicityOthers)
+
+
+```
+
+
+
+## Religion(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$Religion_New)
+
+par(mfrow = c(1,2))
+Religion_New<-as.factor(digital_proxyUS$Religion_New)
+
+# number of occurance
+printtable(digital_proxyUS$Religion_New)
+printtable(digital_proxySG$Religion_New)
+
+# barplot
+drawbarplot(digital_proxyUS$Religion_New,"Bar Plot of Religion US","Religion")
+drawbarplot(digital_proxySG$Religion_New,"Bar Plot of Religion SG","Religion")
+
+# pie chart
+drawpieplot(digital_proxyUS$Religion_New,"Pie Chart of Religion US","Religion")
+drawpieplot(digital_proxySG$Religion_New,"Pie Chart of Religion SG","Religion")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Religion_New)
+percentagehousing(digital_proxySG$Religion_New)
+
+
+```
+
+
+## Education(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$Education)
+
+par(mfrow = c(1,2))
+Education<-as.factor(digital_proxyUS$Education)
+
+
+# number of occurance
+printtable(digital_proxyUS$Education)
+printtable(digital_proxySG$Education)
+
+# barplot
+drawbarplot(digital_proxyUS$Education,"Bar Plot of Education US","Education")
+drawbarplot(digital_proxySG$Education,"Bar Plot of Education SG","Education")
+
+# pie chart
+drawpieplot(digital_proxyUS$Education,"Pie Chart of Education US","Education")
+drawpieplot(digital_proxySG$Education,"Pie Chart of Education SG","Education")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Education)
+percentagehousing(digital_proxySG$Education)
+
+
+```
+
+
+## Employment(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$Employment)
+
+par(mfrow = c(1,2))
+Employment<-as.factor(digital_proxyUS$Employment)
+
+# number of occurance
+printtable(digital_proxyUS$Employment)
+printtable(digital_proxySG$Employment)
+
+# barplot
+drawbarplot(digital_proxyUS$Employment,"Bar Plot of Employment US","Employment")
+drawbarplot(digital_proxySG$Employment,"Bar Plot of Employment SG","Employment")
+
+# pie chart
+drawpieplot(digital_proxyUS$Employment,"Pie Chart of Employment US","Employment")
+drawpieplot(digital_proxySG$Employment,"Pie Chart of Employment SG","Employment")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Employment)
+percentagehousing(digital_proxySG$Employment)
+
+
+
+```
+
+
+## Citizen (Bernoulli Distribution)
+
+```{r}
+summary(digital_proxyUS$Citizen)
+
+par(mfrow = c(1,2))
+Citizen<-as.factor(digital_proxyUS$Citizen)
+
+
+# number of occurance
+printtable(digital_proxyUS$Citizen)
+printtable(digital_proxySG$Citizen)
+
+# barplot
+drawbarplot(digital_proxyUS$Citizen,"Bar Plot of Citizen US","Citizen")
+drawbarplot(digital_proxySG$Citizen,"Bar Plot of Citizen SG","Citizen")
+
+# pie chart
+drawpieplot(digital_proxyUS$Citizen,"Pie Chart of Citizen US","Citizen")
+drawpieplot(digital_proxySG$Citizen,"Pie Chart of Citizen SG","Citizen")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$Citizen)
+percentagehousing(digital_proxySG$Citizen)
+
+
+```
+
+
+## Siblings(Exponential Distribution)
+
+```{r}
+
+# histogram of the Siblings variable
+drawHistogram(digital_proxyUS$Siblings,"Siblings distributionUS","Siblings")
+drawHistogram(digital_proxySG$Siblings,"Siblings distributionSG","Siblings")
+
+# density plot of the Siblings variable
+drawDensity(digital_proxyUS$Siblings,"Siblings distributionUS","Siblings")
+drawDensity(digital_proxySG$Siblings,"Siblings distributionSG","Siblings")
+
+# boxplot
+drawboxplot(digital_proxyUS$Siblings,"Siblings distributionUS","Siblings")
+drawboxplot(digital_proxySG$Siblings,"Siblings distributionSG","Siblings")
+
+# QQ plot (whether normal)
+drawQQplot(digital_proxyUS$Siblings,"Siblings distributionUS","Siblings")
+drawQQplot(digital_proxySG$Siblings,"Siblings distributionSG","Siblings")
+
+
+#summary Siblings
+summarize(digital_proxyUS$Siblings)
+summarize(digital_proxySG$Siblings)
+
+```
+
+
+
+## SiblingsOrder(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$SiblingsOrder)
+
+par(mfrow = c(1,2))
+SiblingsOrder<-as.factor(digital_proxyUS$SiblingsOrder)
+
+# number of occurance
+printtable(digital_proxyUS$SiblingsOrder)
+printtable(digital_proxySG$SiblingsOrder)
+
+# barplot
+drawbarplot(digital_proxyUS$SiblingsOrder,"Bar Plot of SiblingsOrder US","SiblingsOrder")
+drawbarplot(digital_proxySG$SiblingsOrder,"Bar Plot of SiblingsOrder SG","SiblingsOrder")
+
+# pie chart
+drawpieplot(digital_proxyUS$SiblingsOrder,"Pie Chart of SiblingsOrder US","SiblingsOrder")
+drawpieplot(digital_proxySG$SiblingsOrder,"Pie Chart of SiblingsOrder SG","SiblingsOrder")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$SiblingsOrder)
+percentagehousing(digital_proxySG$SiblingsOrder)
+
+```
+
+
+
+# Physical Care Tasks
+
+## HelpFam, HelpRel, HelpFre (Poisson Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpImmediateFam)
+summary(digital_proxyUS$HelpRelatives)
+summary(digital_proxyUS$HelpFriends)
+
+HelpImmediateFam<-as.factor(digital_proxyUS$HelpImmediateFam)
+HelpRelatives<-as.factor(digital_proxyUS$HelpRelatives)
+HelpFriends<-as.factor(digital_proxyUS$HelpFriends)
+
+
+# number of occurance
+printtable(digital_proxyUS$HelpImmediateFam)
+printtable(digital_proxySG$HelpImmediateFam)
+printtable(digital_proxyUS$HelpRelatives)
+printtable(digital_proxySG$HelpRelatives)
+printtable(digital_proxyUS$HelpFriends)
+printtable(digital_proxySG$HelpFriends)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpImmediateFam,"Bar Plot of HelpImmediateFam US","HelpImmediateFam")
+drawbarplot(digital_proxySG$HelpImmediateFam,"Bar Plot of HelpImmediateFam SG","HelpImmediateFam")
+drawbarplot(digital_proxyUS$HelpRelatives,"Bar Plot of HelpRelatives US","HelpRelatives")
+drawbarplot(digital_proxySG$HelpRelatives,"Bar Plot of HelpRelatives SG","HelpRelatives")
+drawbarplot(digital_proxyUS$HelpFriends,"Bar Plot of HelpFriends US","HelpFriends")
+drawbarplot(digital_proxySG$HelpFriends,"Bar Plot of HelpFriends SG","HelpFriends")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpImmediateFam)
+percentagehousing(digital_proxySG$HelpImmediateFam)
+percentagehousing(digital_proxyUS$HelpRelatives)
+percentagehousing(digital_proxySG$HelpRelatives)
+percentagehousing(digital_proxyUS$HelpFriends)
+percentagehousing(digital_proxySG$HelpFriends)
+
+
+
+```
+
+
+## HelpOthers_new, HelpOthsnum, HelpPassAway (Poisson Distribution)
+
+```{r}
+# HelpOthers_new
+# summary(digital_proxyUS$HelpOthers_new)
+# summary(digital_proxyUS$HelpOthersNum)
+# summary(digital_proxyUS$HelpPassAway)
+
+HelpOthers<-as.factor(digital_proxyUS$HelpOthers_new)
+
+
+# number of occurance
+printtable(digital_proxyUS$HelpOthers_new)
+printtable(digital_proxySG$HelpOthers_new)
+printtable(digital_proxyUS$HelpOthersNum)
+printtable(digital_proxySG$HelpOthersNum)
+printtable(digital_proxyUS$HelpPassAway)
+printtable(digital_proxySG$HelpPassAway)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpOthers_new,"Bar Plot of HelpOthers_new US","HelpOthers_new")
+drawbarplot(digital_proxySG$HelpOthers_new,"Bar Plot of HelpOthers_new SG","HelpOthers_new")
+drawbarplot(digital_proxyUS$HelpOthersNum,"Bar Plot of HelpOthersNum US","HelpOthersNum")
+drawbarplot(digital_proxySG$HelpOthersNum,"Bar Plot of HelpOthersNum SG","HelpOthersNum")
+drawbarplot(digital_proxyUS$HelpPassAway,"Bar Plot of HelpPassAway US","HelpPassAway")
+drawbarplot(digital_proxySG$HelpPassAway,"Bar Plot of HelpPassAway SG","HelpPassAway")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpOthers_new)
+percentagehousing(digital_proxySG$HelpOthers_new)
+percentagehousing(digital_proxyUS$HelpOthersNum)
+percentagehousing(digital_proxySG$HelpOthersNum)
+percentagehousing(digital_proxyUS$HelpPassAway)
+percentagehousing(digital_proxySG$HelpPassAway)
+
+```
+
+
+```{r}
+# unique(digital_proxyUS$HelpOthers_new)
+new_data_frame_US <- digital_proxyUS[, c("HelpImmediateFam","HelpRelatives","HelpFriends","HelpWork","HelpIrrelevant","HelpOthers_new")]
+head(new_data_frame_US)
+
+new_data_frame_SG <- digital_proxySG[, c("HelpImmediateFam","HelpRelatives","HelpFriends","HelpWork","HelpIrrelevant","HelpOthers_new")]
+head(new_data_frame_SG)
+```
+
+
+## HelpFood(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpFood)
+
+par(mfrow = c(1,2))
+HelpFood<-as.factor(digital_proxyUS$HelpFood)
+
+# number of occurance
+printtable(digital_proxyUS$HelpFood)
+printtable(digital_proxySG$HelpFood)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpFood,"Bar Plot of HelpFood US","HelpFood")
+drawbarplot(digital_proxySG$HelpFood,"Bar Plot of HelpFood SG","HelpFood")
+
+# pie chart
+drawpieplot(digital_proxyUS$HelpFood,"Pie Chart of HelpFood US","HelpFood")
+drawpieplot(digital_proxySG$HelpFood,"Pie Chart of HelpFood SG","HelpFood")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpFood)
+percentagehousing(digital_proxySG$HelpFood)
+
+```
+
+
+## HelpHousekeep(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpHousekeep)
+
+par(mfrow = c(1,2))
+HelpHousekeep<-as.factor(digital_proxyUS$HelpHousekeep)
+
+# number of occurance
+printtable(digital_proxyUS$HelpHousekeep)
+printtable(digital_proxySG$HelpHousekeep)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpHousekeep,"Bar Plot of HelpHousekeep US","HelpHousekeep")
+drawbarplot(digital_proxySG$HelpHousekeep,"Bar Plot of HelpHousekeep SG","HelpHousekeep")
+
+# pie chart
+drawpieplot(digital_proxyUS$HelpHousekeep,"Pie Chart of HelpHousekeep US","HelpHousekeep")
+drawpieplot(digital_proxySG$HelpHousekeep,"Pie Chart of HelpHousekeep SG","HelpHousekeep")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpHousekeep)
+percentagehousing(digital_proxySG$HelpHousekeep)
+
+```
+
+
+
+## HelpLaundry(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpLaundry)
+
+par(mfrow = c(1,2))
+HelpLaundry<-as.factor(digital_proxyUS$HelpLaundry)
+
+# number of occurance
+printtable(digital_proxyUS$HelpLaundry)
+printtable(digital_proxySG$HelpLaundry)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpLaundry,"Bar Plot of HelpLaundry US","HelpLaundry")
+drawbarplot(digital_proxySG$HelpLaundry,"Bar Plot of HelpLaundry SG","HelpLaundry")
+
+# pie chart
+drawpieplot(digital_proxyUS$HelpLaundry,"Pie Chart of HelpLaundry US","HelpLaundry")
+drawpieplot(digital_proxySG$HelpLaundry,"Pie Chart of HelpLaundry SG","HelpLaundry")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpLaundry)
+percentagehousing(digital_proxySG$HelpLaundry)
+
+
+```
+
+
+
+## HelpTransport(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpTransport)
+
+par(mfrow = c(1,2))
+HelpTransport<-as.factor(digital_proxyUS$HelpTransport)
+
+# number of occurance
+printtable(digital_proxyUS$HelpTransport)
+printtable(digital_proxySG$HelpTransport)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpTransport,"Bar Plot of HelpTransport US","HelpTransport")
+drawbarplot(digital_proxySG$HelpTransport,"Bar Plot of HelpTransport SG","HelpTransport")
+
+# pie chart
+drawpieplot(digital_proxyUS$HelpTransport,"Pie Chart of HelpTransport US","HelpTransport")
+drawpieplot(digital_proxySG$HelpTransport,"Pie Chart of HelpTransport SG","HelpTransport")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpTransport)
+percentagehousing(digital_proxySG$HelpTransport)
+
+```
+
+
+
+## HelpMed(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpMed)
+
+par(mfrow = c(1,2))
+HelpMed<-as.factor(digital_proxyUS$HelpMed)
+
+# number of occurance
+printtable(digital_proxyUS$HelpMed)
+printtable(digital_proxySG$HelpMed)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpMed,"Bar Plot of HelpMed US","HelpMed")
+drawbarplot(digital_proxySG$HelpMed,"Bar Plot of HelpMed SG","HelpMed")
+
+# pie chart
+drawpieplot(digital_proxyUS$HelpMed,"Pie Chart of HelpMed US","HelpMed")
+drawpieplot(digital_proxySG$HelpMed,"Pie Chart of HelpMed SG","HelpMed")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpMed)
+percentagehousing(digital_proxySG$HelpMed)
+
+```
+
+
+
+## HelpFinance(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpFinance)
+
+par(mfrow = c(1,2))
+HelpFinance<-as.factor(digital_proxyUS$HelpFinance)
+
+# number of occurance
+printtable(digital_proxyUS$HelpFinance)
+printtable(digital_proxySG$HelpFinance)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpFinance,"Bar Plot of HelpFinance US","HelpFinance")
+drawbarplot(digital_proxySG$HelpFinance,"Bar Plot of HelpFinance SG","HelpFinance")
+
+# pie chart
+drawpieplot(digital_proxyUS$HelpFinance,"Pie Chart of HelpFinance US","HelpFinance")
+drawpieplot(digital_proxySG$HelpFinance,"Pie Chart of HelpFinance SG","HelpFinance")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpFinance)
+percentagehousing(digital_proxySG$HelpFinance)
+
+
+```
+
+
+
+## HelpDigital(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$HelpDigital)
+
+par(mfrow = c(1,2))
+HelpDigital<-as.factor(digital_proxyUS$HelpDigital)
+
+# number of occurance
+printtable(digital_proxyUS$HelpDigital)
+printtable(digital_proxySG$HelpDigital)
+
+# barplot
+drawbarplot(digital_proxyUS$HelpDigital,"Bar Plot of HelpDigital US","HelpDigital")
+drawbarplot(digital_proxySG$HelpDigital,"Bar Plot of HelpDigital SG","HelpDigital")
+
+# pie chart
+drawpieplot(digital_proxyUS$HelpDigital,"Pie Chart of HelpDigital US","HelpDigital")
+drawpieplot(digital_proxySG$HelpDigital,"Pie Chart of HelpDigital SG","HelpDigital")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$HelpDigital)
+percentagehousing(digital_proxySG$HelpDigital)
+
+```
+
+
+
+
+## ADL: Bath, Groom, Toilet, Transfer, Incontinence, Feed (Multinomial Distribution)
+
+```{r}
+digital_proxyUS_ADL<-digital_proxyUS%>%
+  select(ADLBath, ADLGroom, ADLToilet, ADLTransfer, ADLIncontinence, ADLFeed)
+digital_proxySG_ADL<-digital_proxySG%>%
+  select(ADLBath, ADLGroom, ADLToilet, ADLTransfer, ADLIncontinence, ADLFeed)
+
+# summary(digital_proxyUS_ADL$ADLBath)
+
+par(mfrow = c(2,2))
+ADLBath<-as.factor(digital_proxyUS_ADL$ADLBath)
+ADLGroom<-as.factor(digital_proxyUS_ADL$ADLGroom)
+ADLToilet<-as.factor(digital_proxyUS_ADL$ADLToilet)
+ADLTransfer<-as.factor(digital_proxyUS_ADL$ADLTransfer)
+ADLIncontinence<-as.factor(digital_proxyUS_ADL$ADLIncontinence)
+ADLFeed<-as.factor(digital_proxyUS_ADL$ADLFeed)
+
+
+# number of occurance
+printtable(digital_proxyUS_ADL$ADLBath)
+printtable(digital_proxySG_ADL$ADLBath)
+
+printtable(digital_proxyUS_ADL$ADLGroom)
+printtable(digital_proxySG_ADL$ADLGroom)
+
+printtable(digital_proxyUS_ADL$ADLToilet)
+printtable(digital_proxySG_ADL$ADLToilet)
+
+printtable(digital_proxyUS_ADL$ADLTransfer)
+printtable(digital_proxySG_ADL$ADLTransfer)
+
+printtable(digital_proxyUS_ADL$ADLIncontinence)
+printtable(digital_proxySG_ADL$ADLIncontinence)
+
+printtable(digital_proxyUS_ADL$ADLFeed)
+printtable(digital_proxySG_ADL$ADLFeed)
+
+# barplot
+drawbarplot(digital_proxyUS_ADL$ADLBath,"Bar Plot of ADLBath US","ADLBath")
+drawbarplot(digital_proxySG_ADL$ADLBath,"Bar Plot of ADLBath SG","ADLBath")
+
+drawbarplot(digital_proxyUS_ADL$ADLGroom,"Bar Plot of ADLGroom US","ADLGroom")
+drawbarplot(digital_proxySG_ADL$ADLGroom,"Bar Plot of ADLGroom SG","ADLGroom")
+
+drawbarplot(digital_proxyUS_ADL$ADLToilet,"Bar Plot of ADLToilet US","ADLToilet")
+drawbarplot(digital_proxySG_ADL$ADLToilet,"Bar Plot of ADLToilet SG","ADLToilet")
+
+drawbarplot(digital_proxyUS_ADL$ADLTransfer,"Bar Plot of ADLTransfer US","ADLTransfer")
+drawbarplot(digital_proxySG_ADL$ADLTransfer,"Bar Plot of ADLTransfer SG","ADLTransfer")
+
+drawbarplot(digital_proxyUS_ADL$ADLIncontinence,"Bar Plot of ADLIncontinence US","ADLIncontinence")
+drawbarplot(digital_proxySG_ADL$ADLIncontinence,"Bar Plot of ADLIncontinence SG","ADLIncontinence")
+
+drawbarplot(digital_proxyUS_ADL$ADLFeed,"Bar Plot of ADLFeed US","ADLFeed")
+drawbarplot(digital_proxySG_ADL$ADLFeed,"Bar Plot of ADLFeed SG","ADLFeed")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS_ADL$ADLBath)
+percentagehousing(digital_proxySG_ADL$ADLBath)
+
+percentagehousing(digital_proxyUS_ADL$ADLGroom)
+percentagehousing(digital_proxySG_ADL$ADLGroom)
+
+percentagehousing(digital_proxyUS_ADL$ADLToilet)
+percentagehousing(digital_proxySG_ADL$ADLToilet)
+
+percentagehousing(digital_proxyUS_ADL$ADLTransfer)
+percentagehousing(digital_proxySG_ADL$ADLTransfer)
+
+percentagehousing(digital_proxyUS_ADL$ADLIncontinence)
+percentagehousing(digital_proxySG_ADL$ADLIncontinence)
+
+percentagehousing(digital_proxyUS_ADL$ADLFeed)
+percentagehousing(digital_proxySG_ADL$ADLFeed)
+
+```
+
+
+
+
+## Medical Delegation
+
+## MedicalHelpImmediateFam, MedicalHelpRelatives, MedicalHelpFriends (Multinomial Distribution)
+
+```{r}
+#summary(digital_proxyUS$MedicalHelpImmediateFam)
+#summary(digital_proxyUS$MedicalHelpRelatives)
+#summary(digital_proxyUS$MedicalHelpFriends)
+
+MedicalHelpImmediateFam<-as.factor(digital_proxyUS$MedicalHelpImmediateFam)
+MedicalHelpRelatives<-as.factor(digital_proxyUS$MedicalHelpRelatives)
+MedicalHelpFriends<-as.factor(digital_proxyUS$MedicalHelpFriends)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalHelpImmediateFam)
+printtable(digital_proxySG$MedicalHelpImmediateFam)
+printtable(digital_proxyUS$MedicalHelpRelatives)
+printtable(digital_proxySG$MedicalHelpRelatives)
+printtable(digital_proxyUS$MedicalHelpFriends)
+printtable(digital_proxySG$MedicalHelpFriends)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalHelpImmediateFam,"Bar Plot of MedicalHelpImmediateFam US","MedicalHelpImmediateFam")
+drawbarplot(digital_proxySG$MedicalHelpImmediateFam,"Bar Plot of MedicalHelpImmediateFam SG","MedicalHelpImmediateFam")
+drawbarplot(digital_proxyUS$MedicalHelpRelatives,"Bar Plot of MedicalHelpRelatives US","MedicalHelpRelatives")
+drawbarplot(digital_proxySG$MedicalHelpRelatives,"Bar Plot of MedicalHelpRelatives SG","MedicalHelpRelatives")
+drawbarplot(digital_proxyUS$MedicalHelpFriends,"Bar Plot of MedicalHelpFriends US","MedicalHelpFriends")
+drawbarplot(digital_proxySG$MedicalHelpFriends,"Bar Plot of MedicalHelpFriends SG","MedicalHelpFriends")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalHelpImmediateFam)
+percentagehousing(digital_proxySG$MedicalHelpImmediateFam)
+percentagehousing(digital_proxyUS$MedicalHelpRelatives)
+percentagehousing(digital_proxySG$MedicalHelpRelatives)
+percentagehousing(digital_proxyUS$MedicalHelpFriends)
+percentagehousing(digital_proxySG$MedicalHelpFriends)
+
+```
+
+
+## MedicalHelpOthers, MedicalHelpOthersNum, MedicalHelpPassAway (Poisson Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalHelpOthers_new)
+summary(digital_proxyUS$MedicalHelpOthersNum)
+summary(digital_proxyUS$MedicalHelpPassAway)
+
+MedicalHelpOthers<-as.factor(digital_proxyUS$MedicalHelpOthers_new)
+MedicalHelpOthersNum<-as.factor(digital_proxyUS$MedicalHelpOthersNum)
+MedicalHelpPassAway<-as.factor(digital_proxyUS$MedicalHelpPassAway)
+
+
+# number of occurance
+printtable(digital_proxyUS$MedicalHelpOthers_new)
+printtable(digital_proxySG$MedicalHelpOthers_new)
+printtable(digital_proxyUS$MedicalHelpOthersNum)
+printtable(digital_proxySG$MedicalHelpOthersNum)
+printtable(digital_proxyUS$MedicalHelpPassAway)
+printtable(digital_proxySG$MedicalHelpPassAway)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalHelpOthers_new,"Bar Plot of MedicalHelpOthers_new US","MedicalHelpOthers_new")
+drawbarplot(digital_proxySG$MedicalHelpOthers_new,"Bar Plot of MedicalHelpOthers_new SG","MedicalHelpOthers_new")
+drawbarplot(digital_proxyUS$MedicalHelpOthersNum,"Bar Plot of MedicalHelpOthersNum US","MedicalHelpOthersNum")
+drawbarplot(digital_proxySG$MedicalHelpOthersNum,"Bar Plot of MedicalHelpOthersNum SG","MedicalHelpOthersNum")
+drawbarplot(digital_proxyUS$MedicalHelpPassAway,"Bar Plot of MedicalHelpPassAway US","MedicalHelpPassAway")
+drawbarplot(digital_proxySG$MedicalHelpPassAway,"Bar Plot of MedicalHelpPassAway SG","MedicalHelpPassAway")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalHelpOthers_new)
+percentagehousing(digital_proxySG$MedicalHelpOthers_new)
+percentagehousing(digital_proxyUS$MedicalHelpOthersNum)
+percentagehousing(digital_proxySG$MedicalHelpOthersNum)
+percentagehousing(digital_proxyUS$MedicalHelpPassAway)
+percentagehousing(digital_proxySG$MedicalHelpPassAway)
+
+```
+
+
+```{r}
+new_data_frame_medical_US <- digital_proxyUS[, c("MedicalHelpImmediateFam","MedicalHelpRelatives","MedicalHelpFriends","MedicalHelpWork","MedicalHelpIrrelevant","MedicalHelpOthers_new")]
+head(new_data_frame_medical_US)
+
+new_data_frame_medical_SG <- digital_proxySG[, c("MedicalHelpImmediateFam","MedicalHelpRelatives","MedicalHelpFriends","MedicalHelpWork","MedicalHelpIrrelevant","MedicalHelpOthers_new")]
+head(new_data_frame_medical_SG)
+```
+
+
+## Medical Delegation Action (Low-Stake Activities):
+
+## MedicalMakeAppt(Poisson Distribution)
+
+```{r}
+
+par(mfrow = c(1,2))
+FinanceAction<-as.factor(digital_proxyUS$MedicalMakeAppt)
+
+
+# number of occurance
+printtable(digital_proxyUS$MedicalMakeAppt)
+printtable(digital_proxySG$MedicalMakeAppt)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalMakeAppt,"Bar Plot of MedicalMakeAppt US","MedicalMakeAppt")
+drawbarplot(digital_proxySG$MedicalMakeAppt,"Bar Plot of MedicalMakeAppt SG","MedicalMakeAppt")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalMakeAppt)
+percentagehousing(digital_proxySG$MedicalMakeAppt)
+
+
+```
+
+
+## MedicalMakeApptFuture(Multinomial Distribution)
+
+```{r}
+
+# helpfoodfuture
+digital_proxyUS_MedicalMakeApptFuture<-digital_proxyUS%>%
+  select(MedicalMakeAppt,MedicalMakeApptFuture) %>%
+  filter(MedicalMakeAppt=="Never")
+digital_proxySG_MedicalMakeApptFuture<-digital_proxySG%>%
+  select(MedicalMakeAppt,MedicalMakeApptFuture) %>%
+  filter(MedicalMakeAppt=="Never")
+
+par(mfrow = c(1,2))
+MedicalMakeApptFuture<-as.factor(digital_proxyUS_MedicalMakeApptFuture$MedicalMakeApptFuture)
+MedicalMakeApptFuture<-as.factor(digital_proxySG_MedicalMakeApptFuture$MedicalMakeApptFuture)
+
+# number of occurance
+printtable(digital_proxyUS_MedicalMakeApptFuture$MedicalMakeApptFuture)
+printtable(digital_proxySG_MedicalMakeApptFuture$MedicalMakeApptFuture)
+
+# barplot
+drawbarplot(digital_proxyUS_MedicalMakeApptFuture$MedicalMakeApptFuture,"Bar Plot of MedicalMakeApptFuture US","MedicalMakeApptFuture")
+drawbarplot(digital_proxySG_MedicalMakeApptFuture$MedicalMakeApptFuture,"Bar Plot of MedicalMakeApptFuture SG","MedicalMakeApptFuture")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS_MedicalMakeApptFuture$MedicalMakeApptFuture)
+percentagehousing(digital_proxySG_MedicalMakeApptFuture$MedicalMakeApptFuture)
+
+```
+
+
+
+## MedicalAccompanyAppt(Poisson Distribution)
+
+```{r}
+par(mfrow = c(1,2))
+FinanceAction<-as.factor(digital_proxyUS$MedicalAccompanyAppt)
+
+
+# number of occurance
+printtable(digital_proxyUS$MedicalAccompanyAppt)
+printtable(digital_proxySG$MedicalAccompanyAppt)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalAccompanyAppt,"Bar Plot of MedicalAccompanyAppt US","MedicalAccompanyAppt")
+drawbarplot(digital_proxySG$MedicalAccompanyAppt,"Bar Plot of MedicalAccompanyAppt SG","MedicalAccompanyAppt")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalAccompanyAppt)
+percentagehousing(digital_proxySG$MedicalAccompanyAppt)
+
+```
+
+
+## MedicalAccompanyApptFuture(Multinomial Distribution)
+
+```{r}
+
+# helpfoodfuture
+digital_proxyUS_MedicalAccompanyApptFuture<-digital_proxyUS%>%
+  select(MedicalAccompanyAppt,MedicalAccompanyApptFuture) %>%
+  filter(MedicalAccompanyAppt=="Never")
+digital_proxySG_MedicalAccompanyApptFuture<-digital_proxySG%>%
+  select(MedicalAccompanyAppt,MedicalAccompanyApptFuture) %>%
+  filter(MedicalAccompanyAppt=="Never")
+
+par(mfrow = c(1,2))
+MedicalAccompanyApptFuture<-as.factor(digital_proxyUS_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture)
+MedicalAccompanyApptFuture<-as.factor(digital_proxySG_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture)
+
+# number of occurance
+printtable(digital_proxyUS_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture)
+printtable(digital_proxySG_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture)
+
+# barplot
+drawbarplot(digital_proxyUS_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture,"Bar Plot of MedicalAccompanyApptFuture US","MedicalAccompanyApptFuture")
+drawbarplot(digital_proxySG_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture,"Bar Plot of MedicalAccompanyApptFuture SG","MedicalAccompanyApptFuture")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture)
+percentagehousing(digital_proxySG_MedicalAccompanyApptFuture$MedicalAccompanyApptFuture)
+
+```
+
+
+
+## MedicalTakeMeds(Poisson Distribution)
+
+```{r}
+par(mfrow = c(1,2))
+FinanceAction<-as.factor(digital_proxyUS$MedicalTakeMeds)
+
+
+# number of occurance
+printtable(digital_proxyUS$MedicalTakeMeds)
+printtable(digital_proxySG$MedicalTakeMeds)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalTakeMeds,"Bar Plot of MedicalTakeMeds US","MedicalTakeMeds")
+drawbarplot(digital_proxySG$MedicalTakeMeds,"Bar Plot of MedicalTakeMeds SG","MedicalTakeMeds")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalTakeMeds)
+percentagehousing(digital_proxySG$MedicalTakeMeds)
+
+```
+
+
+## MedicalTakeMedsFuture(Multinomial Distribution)
+
+```{r}
+
+# helpfoodfuture
+digital_proxyUS_MedicalTakeMedsFuture<-digital_proxyUS%>%
+  select(MedicalTakeMeds,MedicalTakeMedsFuture) %>%
+  filter(MedicalTakeMeds=="Never")
+digital_proxySG_MedicalTakeMedsFuture<-digital_proxySG%>%
+  select(MedicalTakeMeds,MedicalTakeMedsFuture) %>%
+  filter(MedicalTakeMeds=="Never")
+
+par(mfrow = c(1,2))
+MedicalTakeMedsFuture<-as.factor(digital_proxyUS_MedicalTakeMedsFuture$MedicalTakeMedsFuture)
+MedicalTakeMedsFuture<-as.factor(digital_proxySG_MedicalTakeMedsFuture$MedicalTakeMedsFuture)
+
+# number of occurance
+printtable(digital_proxyUS_MedicalTakeMedsFuture$MedicalTakeMedsFuture)
+printtable(digital_proxySG_MedicalTakeMedsFuture$MedicalTakeMedsFuture)
+
+# barplot
+drawbarplot(digital_proxyUS_MedicalTakeMedsFuture$MedicalTakeMedsFuture,"Bar Plot of MedicalTakeMedsFuture US","MedicalTakeMedsFuture")
+drawbarplot(digital_proxySG_MedicalTakeMedsFuture$MedicalTakeMedsFuture,"Bar Plot of MedicalTakeMedsFuture SG","MedicalTakeMedsFuture")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS_MedicalTakeMedsFuture$MedicalTakeMedsFuture)
+percentagehousing(digital_proxySG_MedicalTakeMedsFuture$MedicalTakeMedsFuture)
+
+```
+
+
+
+## MedicalSeeTreatment(Poisson Distribution)
+
+```{r}
+par(mfrow = c(1,2))
+FinanceAction<-as.factor(digital_proxyUS$MedicalSeeTreatment)
+
+
+# number of occurance
+printtable(digital_proxyUS$MedicalSeeTreatment)
+printtable(digital_proxySG$MedicalSeeTreatment)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalSeeTreatment,"Bar Plot of MedicalSeeTreatment US","MedicalSeeTreatment")
+drawbarplot(digital_proxySG$MedicalSeeTreatment,"Bar Plot of MedicalSeeTreatment SG","MedicalSeeTreatment")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalSeeTreatment)
+percentagehousing(digital_proxySG$MedicalSeeTreatment)
+
+```
+
+
+## MedicalSeeTreatmentFuture(Multinomial Distribution)
+
+```{r}
+
+# helpfoodfuture
+digital_proxyUS_MedicalSeeTreatmentFuture<-digital_proxyUS%>%
+  select(MedicalSeeTreatment,MedicalSeeTreatmentFuture) %>%
+  filter(MedicalSeeTreatment=="Never")
+digital_proxySG_MedicalSeeTreatmentFuture<-digital_proxySG%>%
+  select(MedicalSeeTreatment,MedicalSeeTreatmentFuture) %>%
+  filter(MedicalSeeTreatment=="Never")
+
+par(mfrow = c(1,2))
+MedicalSeeTreatmentFuture<-as.factor(digital_proxyUS_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture)
+MedicalSeeTreatmentFuture<-as.factor(digital_proxySG_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture)
+
+# number of occurance
+printtable(digital_proxyUS_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture)
+printtable(digital_proxySG_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture)
+
+# barplot
+drawbarplot(digital_proxyUS_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture,"Bar Plot of MedicalSeeTreatmentFuture US","MedicalSeeTreatmentFuture")
+drawbarplot(digital_proxySG_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture,"Bar Plot of MedicalSeeTreatmentFuture SG","MedicalSeeTreatmentFuture")
+
+
+# percentage of each categories
+percentagehousing(digital_proxyUS_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture)
+percentagehousing(digital_proxySG_MedicalSeeTreatmentFuture$MedicalSeeTreatmentFuture)
+
+```
+
+## Low_Stake_Activities
+
+```{r}
+Low_Stake_Activities<-data.frame(MedicalMakeAppt=c("Daily","Weekly","Monthly","Yearly","Never"),
+                                 MedicalMakeApptFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"),
+                                 MedicalAccompanyAppt=c("Daily","Weekly","Monthly","Yearly","Never"),
+                                 MedicalAccompanyApptFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"),
+                                 MedicalTakeMeds=c("Daily","Weekly","Monthly","Yearly","Never"),
+                                 MedicalTakeMedsFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"),
+                                 MedicalSeeTreatment=c("Daily","Weekly","Monthly","Yearly","Never"),
+                                 MedicalSeeTreatmentFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"))
+
+
+Low_stake_never<-data.frame(MedicalMakeApptFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"),
+                            MedicalAccompanyApptFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"),
+                            MedicalTakeMedsFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"),
+                            MedicalSeeTreatmentFuture=c("Very unlikely","Somewhat unlikely","Somewhat likely","Very likely","Unsure"))
+```
+
+
+```{r}
+new_data_frame_Low_Stake_US <- digital_proxyUS[, c("MedicalMakeAppt","MedicalAccompanyAppt","MedicalTakeMeds","MedicalSeeTreatment","Low_Stake_Activities")]
+head(new_data_frame_Low_Stake_US)
+
+new_data_frame_Low_Stake_SG <- digital_proxySG[, c("MedicalMakeAppt","MedicalAccompanyAppt","MedicalTakeMeds","MedicalSeeTreatment","Low_Stake_Activities")]
+head(new_data_frame_Low_Stake_SG)
+```
+
+
+
+
+## Medical Delegation Action (High-Stake Activities): Medical Decision Making
+
+## MedicalDecisionPerson(Multinomial Distribution)
+
+```{r}
+print(cleaned_data4)
+
+# number of occurance
+printtable(cleaned_data3$guidance)
+printtable(cleaned_data3$ongoing_assistance)
+printtable(cleaned_data3$in_person_help)
+printtable(cleaned_data3$unsupervised_help)
+printtable(cleaned_data3$Not_Applicable)
+
+
+# percentage of each categories
+percentagehousing(cleaned_data3$guidance)
+percentagehousing(cleaned_data3$ongoing_assistance)
+percentagehousing(cleaned_data3$in_person_help)
+percentagehousing(cleaned_data3$unsupervised_help)
+percentagehousing(cleaned_data3$Not_Applicable)
+
+
+
+# number of occurance
+printtable(digital_proxyUS$MedicalDecisionPerson)
+printtable(digital_proxySG$MedicalDecisionPerson)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalDecisionPerson,"Bar Plot of MedicalDecisionPerson US","MedicalDecisionPerson")
+drawbarplot(digital_proxySG$MedicalDecisionPerson,"Bar Plot of MedicalDecisionPerson SG","MedicalDecisionPerson")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalDecisionPerson)
+percentagehousing(digital_proxySG$MedicalDecisionPerson)
+
+```
+
+
+## MedicalDecisionDoctor(Multinomial Distribution)
+
+```{r}
+
+summary(digital_proxyUS$MedicalDecisionDoctor)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalDecisionDoctor)
+printtable(digital_proxySG$MedicalDecisionDoctor)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalDecisionDoctor,"Bar Plot of MedicalDecisionDoctor US","MedicalDecisionDoctor")
+drawbarplot(digital_proxySG$MedicalDecisionDoctor,"Bar Plot of MedicalDecisionDoctor SG","MedicalDecisionDoctor")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalDecisionDoctor)
+percentagehousing(digital_proxySG$MedicalDecisionDoctor)
+
+
+```
+
+
+## MedicalSignPapers(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalSignPapers)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalSignPapers)
+printtable(digital_proxySG$MedicalSignPapers)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalSignPapers,"Bar Plot of MedicalSignPapers US","MedicalSignPapers")
+drawbarplot(digital_proxySG$MedicalSignPapers,"Bar Plot of MedicalSignPapers SG","MedicalSignPapers")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalSignPapers)
+percentagehousing(digital_proxySG$MedicalSignPapers)
+
+```
+
+
+
+## MedicalWorthPerson(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalWorthPerson)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalWorthPerson)
+printtable(digital_proxySG$MedicalWorthPerson)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalWorthPerson,"Bar Plot of MedicalWorthPerson US","MedicalWorthPerson")
+drawbarplot(digital_proxySG$MedicalWorthPerson,"Bar Plot of MedicalWorthPerson SG","MedicalWorthPerson")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalWorthPerson)
+percentagehousing(digital_proxySG$MedicalWorthPerson)
+
+```
+
+
+## MedicalWorthDoctor(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalWorthDoctor)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalWorthDoctor)
+printtable(digital_proxySG$MedicalWorthDoctor)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalWorthDoctor,"Bar Plot of MedicalWorthDoctor US","MedicalWorthDoctor")
+drawbarplot(digital_proxySG$MedicalWorthDoctor,"Bar Plot of MedicalWorthDoctor SG","MedicalWorthDoctor")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalWorthDoctor)
+percentagehousing(digital_proxySG$MedicalWorthDoctor)
+
+
+```
+
+
+
+## MedicalWorthFamily(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalWorthFamily)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalWorthFamily)
+printtable(digital_proxySG$MedicalWorthFamily)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalWorthFamily,"Bar Plot of MedicalWorthFamily US","MedicalWorthFamily")
+drawbarplot(digital_proxySG$MedicalWorthFamily,"Bar Plot of MedicalWorthFamily SG","MedicalWorthFamily")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalWorthFamily)
+percentagehousing(digital_proxySG$MedicalWorthFamily)
+
+```
+
+
+
+## MedicalEndPerson(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalEndPerson)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalEndPerson)
+printtable(digital_proxySG$MedicalEndPerson)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalEndPerson,"Bar Plot of MedicalEndPerson US","MedicalEndPerson")
+drawbarplot(digital_proxySG$MedicalEndPerson,"Bar Plot of MedicalEndPerson SG","MedicalEndPerson")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalEndPerson)
+percentagehousing(digital_proxySG$MedicalEndPerson)
+
+```
+
+
+## MedicalEndDoctor(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalEndDoctor)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalEndDoctor)
+printtable(digital_proxySG$MedicalEndDoctor)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalEndDoctor,"Bar Plot of MedicalEndDoctor US","MedicalEndDoctor")
+drawbarplot(digital_proxySG$MedicalEndDoctor,"Bar Plot of MedicalEndDoctor SG","MedicalEndDoctor")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalEndDoctor)
+percentagehousing(digital_proxySG$MedicalEndDoctor)
+
+```
+
+
+## MedicalEndFamily(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalEndFamily)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalEndFamily)
+printtable(digital_proxySG$MedicalEndFamily)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalEndFamily,"Bar Plot of MedicalEndFamily US","MedicalEndFamily")
+drawbarplot(digital_proxySG$MedicalEndFamily,"Bar Plot of MedicalEndFamily SG","MedicalEndFamily")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalEndFamily)
+percentagehousing(digital_proxySG$MedicalEndFamily)
+
+
+```
+
+
+## MedicalFlexibilityPerson(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalFlexibilityPerson)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalFlexibilityPerson)
+printtable(digital_proxySG$MedicalFlexibilityPerson)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalFlexibilityPerson,"Bar Plot of MedicalFlexibilityPerson US","MedicalFlexibilityPerson")
+drawbarplot(digital_proxySG$MedicalFlexibilityPerson,"Bar Plot of MedicalFlexibilityPerson SG","MedicalFlexibilityPerson")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalFlexibilityPerson)
+percentagehousing(digital_proxySG$MedicalFlexibilityPerson)
+
+```
+
+
+## MedicalFlexibilityDoctor(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalFlexibilityDoctor)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalFlexibilityDoctor)
+printtable(digital_proxySG$MedicalFlexibilityDoctor)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalFlexibilityDoctor,"Bar Plot of MedicalFlexibilityDoctor US","MedicalFlexibilityDoctor")
+drawbarplot(digital_proxySG$MedicalFlexibilityDoctor,"Bar Plot of MedicalFlexibilityDoctor SG","MedicalFlexibilityDoctor")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalFlexibilityDoctor)
+percentagehousing(digital_proxySG$MedicalFlexibilityDoctor)
+
+```
+
+
+## MedicalFlexibilityFamily(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalFlexibilityFamily)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalFlexibilityFamily)
+printtable(digital_proxySG$MedicalFlexibilityFamily)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalFlexibilityFamily,"Bar Plot of MedicalFlexibilityFamily US","MedicalFlexibilityFamily")
+drawbarplot(digital_proxySG$MedicalFlexibilityFamily,"Bar Plot of MedicalFlexibilityFamily SG","MedicalFlexibilityFamily")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalFlexibilityFamily)
+percentagehousing(digital_proxySG$MedicalFlexibilityFamily)
+
+```
+
+
+## MedicalDoctorQuestions(Multinomial Distribution)
+
+```{r}
+summary(digital_proxyUS$MedicalDoctorQuestions)
+
+# number of occurance
+printtable(digital_proxyUS$MedicalDoctorQuestions)
+printtable(digital_proxySG$MedicalDoctorQuestions)
+
+# barplot
+drawbarplot(digital_proxyUS$MedicalDoctorQuestions,"Bar Plot of MedicalDoctorQuestions US","MedicalDoctorQuestions")
+drawbarplot(digital_proxySG$MedicalDoctorQuestions,"Bar Plot of MedicalDoctorQuestions SG","MedicalDoctorQuestions")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$MedicalDoctorQuestions)
+percentagehousing(digital_proxySG$MedicalDoctorQuestions)
+
+```
+
+
+## Digital Caregiver Account and Number (Multinomial Distribution)
+
+```{r}
+digital_proxyUS_caregiveraccount<-digital_proxyUS%>%
+  select(DigitalCaregiverAccount,DigitalCaregiverAccountNum) %>%
+  filter(DigitalCaregiverAccount=="Yes")
+digital_proxySG_caregiveraccount<-digital_proxySG%>%
+  select(DigitalCaregiverAccount,DigitalCaregiverAccountNum) %>%
+  filter(DigitalCaregiverAccount=="Yes")
+
+DigitalCaregiverAccount<-as.factor(digital_proxyUS$DigitalCaregiverAccount)
+DigitalCaregiverAccountNum<-as.factor(digital_proxyUS_caregiveraccount$DigitalCaregiverAccountNum)
+
+# number of occurance
+printtable(digital_proxyUS$DigitalCaregiverAccount)
+printtable(digital_proxyUS$DigitalCaregiverAccount)
+
+printtable(digital_proxyUS_caregiveraccount$DigitalCaregiverAccountNum)
+printtable(digital_proxySG_caregiveraccount$DigitalCaregiverAccountNum)
+
+# barplot
+drawbarplot(digital_proxyUS$DigitalCaregiverAccount,"Bar Plot of DigitalCaregiverAccount US","DigitalCaregiverAccount")
+drawbarplot(digital_proxyUS$DigitalCaregiverAccount,"Bar Plot of DigitalCaregiverAccount SG","DigitalCaregiverAccount")
+
+drawbarplot(digital_proxyUS_caregiveraccount$DigitalCaregiverAccountNum,"Bar Plot of DigitalCaregiverAccountNum US","DigitalCaregiverAccountNum")
+drawbarplot(digital_proxySG_caregiveraccount$DigitalCaregiverAccountNum,"Bar Plot of DigitalCaregiverAccountNum SG","DigitalCaregiverAccountNum")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$DigitalCaregiverAccount)
+percentagehousing(digital_proxyUS$DigitalCaregiverAccount)
+
+percentagehousing(digital_proxyUS_caregiveraccount$DigitalCaregiverAccountNum)
+percentagehousing(digital_proxySG_caregiveraccount$DigitalCaregiverAccountNum)
+
+```
+
+
+
+### whether low-stake Activities will influence the High-stake Activities? (What variables will influence low-stake Activities, such as ADL, IADL)
+
+
+## High_Stake_Activities
+
+```{r}
+High_Stake_Activities<-data.frame(MedicalDecisionPerson=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalDecisionDoctor=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalSignPapers=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalWorthPerson=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalWorthDoctor=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalWorthFamily=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalEndPerson=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalEndDoctor=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalEndFamily=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalFlexibilityPerson=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalFlexibilityDoctor=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalFlexibilityFamily=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 MedicalDoctorQuestions=c("Yes","No, but I should have","No, because I didn't need to"),
+                                 DigitalCaregiverAccount=c("Yes","No, but I should have","No, because I didn't need to"))
+```
+
+
+
+## DigitalAssistMedical(Binomial Distribution)
+
+```{r}
+par(mfrow = c(1,2))
+DigitalAssistMedical<-as.factor(digital_proxyUS$DigitalAssistMedical)
+
+# number of occurance
+printtable(digital_proxyUS$DigitalAssistMedical)
+printtable(digital_proxySG$DigitalAssistMedical)
+
+# barplot
+drawbarplot(digital_proxyUS$DigitalAssistMedical,"Bar Plot of DigitalAssistMedical US","DigitalAssistMedical")
+drawbarplot(digital_proxySG$DigitalAssistMedical,"Bar Plot of DigitalAssistMedical SG","DigitalAssistMedical")
+
+# percentage of each categories
+percentagehousing(digital_proxyUS$DigitalAssistMedical)
+percentagehousing(digital_proxySG$DigitalAssistMedical)
+
+```
+
+
+## DigitalAssistReasons(Multinomial Distribution)
+
+```{r}
+print(cleaned_data4)
+par(mfrow = c(2,2))
+
+# number of occurance
+printtable(cleaned_data4$not_user_friendly)
+printtable(cleaned_data4$difficult)
+printtable(cleaned_data4$concerns_data)
+printtable(cleaned_data4$unfamiliar)
+printtable(cleaned_data4$physical_limitations)
+printtable(cleaned_data4$cognitive_limiation)
+printtable(cleaned_data4$no_device)
+printtable(cleaned_data4$Others)
+
+
+# percentage of each categories
+percentagehousing(cleaned_data4$not_user_friendly)
+percentagehousing(cleaned_data4$difficult)
+percentagehousing(cleaned_data4$concerns_data)
+percentagehousing(cleaned_data4$unfamiliar)
+percentagehousing(cleaned_data4$physical_limitations)
+percentagehousing(cleaned_data4$cognitive_limiation)
+percentagehousing(cleaned_data4$no_device)
+percentagehousing(cleaned_data4$Others)
+
+```
+
+
+## DigitalAssistAccessWays(Multinomial Distribution)
+
+```{r}
+print(cleaned_data5)
+
+# number of occurance
+printtable(cleaned_data5$username_password)
+printtable(cleaned_data5$fingerprint)
+printtable(cleaned_data5$donot_know)
+printtable(cleaned_data5$proxy_account)
+
+
+# percentage of each categories
+percentagehousing(cleaned_data5$username_password)
+percentagehousing(cleaned_data5$fingerprint)
+percentagehousing(cleaned_data5$donot_know)
+percentagehousing(cleaned_data5$proxy_account)
+
+```
+
+
+## DigitalAssistUseWays(Multinomial Distribution)
+
+```{r}
+print(cleaned_data6)
+
+# number of occurance
+printtable(cleaned_data6$guidance)
+printtable(cleaned_data6$ongoing_assistance)
+printtable(cleaned_data6$in_person_help)
+printtable(cleaned_data6$unsupervised_help)
+printtable(cleaned_data6$Not_Applicable)
+
+
+# percentage of each categories
+percentagehousing(cleaned_data6$guidance)
+percentagehousing(cleaned_data6$ongoing_assistance)
+percentagehousing(cleaned_data6$in_person_help)
+percentagehousing(cleaned_data6$unsupervised_help)
+percentagehousing(cleaned_data6$Not_Applicable)
+
+```
+
+
+
+```{r}
+new_data_frame_High_Stake_US <- digital_proxyUS[, c("MedicalDecisionPerson","MedicalDecisionDoctor","MedicalSignPapers","MedicalWorthPerson","MedicalWorthDoctor","MedicalWorthFamily","MedicalEndPerson","MedicalEndDoctor","MedicalEndFamily","MedicalFlexibilityPerson","MedicalFlexibilityDoctor","MedicalFlexibilityFamily","MedicalDoctorQuestions","DigitalCaregiverAccount","High_Stake_Activities")]
+head(new_data_frame_High_Stake_US)
+
+new_data_frame_High_Stake_SG <- digital_proxySG[, c("MedicalDecisionPerson","MedicalDecisionDoctor","MedicalSignPapers","MedicalWorthPerson","MedicalWorthDoctor","MedicalWorthFamily","MedicalEndPerson","MedicalEndDoctor","MedicalEndFamily","MedicalFlexibilityPerson","MedicalFlexibilityDoctor","MedicalFlexibilityFamily","MedicalDoctorQuestions","DigitalCaregiverAccount","High_Stake_Activities")]
+head(new_data_frame_High_Stake_SG)
+```
+
+
+
+
+

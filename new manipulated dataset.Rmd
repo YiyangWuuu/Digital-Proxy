@@ -1,0 +1,193 @@
+---
+title: "new manipulated dataset"
+author: "Wu Yiyang"
+date: "2023-12-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(corrplot)
+library(dplyr)
+```
+
+```{r}
+raw_digital_proxy <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/US_SG_dataset.csv")
+```
+
+## DigitalAssistReasons
+
+```{r}
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data4 <- data.frame(
+  ID = 1:942,
+  Response = raw_digital_proxy$DigitalAssistReasons_new
+)
+
+cleaned_data4 <- survey_data4 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "not user-friendly"), "Yes", "No"),
+    difficult = ifelse(str_detect(Response, "difficult"), "Yes", "No"),
+    concerns_data = ifelse(str_detect(Response, "concerns data"), "Yes", "No"),
+    unfamiliar = ifelse(str_detect(Response, "unfamiliar"), "Yes", "No"),
+    physical_limitations = ifelse(Response == "physical limitations", "Yes", "No"),
+    cognitive_limiation = ifelse(Response == "cognitive limiation", "Yes", "No"),
+    no_device = ifelse(Response == "do not have device", "Yes", "No"),
+    Others = ifelse(Response == "Others", "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data4<- mutate(cleaned_data4,
+                       Response = recode(Response,
+                                         "The app was not user-friendly for them" = "not user-friendly",
+                                         "They see using the app as a difficult task that should be avoided." = "difficult",
+                                         "They have concerns about sharing their data with third parties." = "concerns data",
+                                         "They are unfamiliar with using a technology device to access the app." = "unfamiliar",
+                                         "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app." = "physical limitations",
+                                         "They do not have a device or equipment to access their digital accounts." = "do not have device",
+                                         "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app." = "cognitive limiation",
+                                         "Others (Please Specify)" = "Others",
+                                         .default = Response
+                       ))
+cleaned_data4 <- cleaned_data4 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "not user-friendly"), "Yes", "No"),
+    difficult = ifelse(str_detect(Response, "difficult"), "Yes", "No"),
+    concerns_data = ifelse(str_detect(Response, "concerns data"), "Yes", "No"),
+    unfamiliar = ifelse(str_detect(Response, "unfamiliar"), "Yes", "No"),
+    physical_limitations = ifelse(Response == "physical limitations", "Yes", "No"),
+    cognitive_limiation = ifelse(Response == "cognitive limiation", "Yes", "No"),
+    no_device = ifelse(Response == "do not have device", "Yes", "No"),
+    Others = ifelse(Response == "Others", "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data4)
+
+```
+
+```{r}
+# file_path <- "cleaned_data4.csv"
+
+# Export the data frame to a CSV file
+# write.csv(cleaned_data4, file = file_path, row.names = FALSE)
+# getwd()
+```
+
+
+## DigitalAssistAccessWays
+
+```{r}
+library(stringr)
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data5 <- data.frame(
+  ID = 1:942,
+  Response = raw_digital_proxy$DigitalAssistAccessWays_new
+)
+
+cleaned_data5 <- survey_data5 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "username and password"), "Yes", "No"),
+    fingerprint = ifelse(str_detect(Response, "fingerprint"), "Yes", "No"),
+    donot_know = ifelse(str_detect(Response, "donot know"), "Yes", "No"),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data5<- mutate(cleaned_data5,
+                       Response = recode(Response,
+                                         "I know the username and password for their online account(s)" = "username and password",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "fingerprint",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "donot know",
+                       "The institution has given me my own separate login and password to help manage manage their online account(s)" = "proxy account",
+                                         .default = Response
+                       ))
+cleaned_data5 <- cleaned_data5 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "username and password"), "Yes", "No"),
+    fingerprint = ifelse(str_detect(Response, "fingerprint"), "Yes", "No"),
+    donot_know = ifelse(str_detect(Response, "donot know"), "Yes", "No"),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data5)
+
+```
+
+```{r}
+# file_path <- "cleaned_data5.csv"
+
+# Export the data frame to a CSV file
+# write.csv(cleaned_data5, file = file_path, row.names = FALSE)
+# getwd()
+```
+
+
+
+## DigitalAssistUseWays
+
+```{r}
+library(stringr)
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data6 <- data.frame(
+  ID = 1:942,
+  Response = raw_digital_proxy$DigitalAssistUseWays_new
+)
+
+cleaned_data6 <- survey_data6 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "guidance"), "Yes", "No"),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoing assistance"), "Yes", "No"),
+    in_person_help = ifelse(str_detect(Response, "in-person help"), "Yes", "No"),
+    unsupervised_help = ifelse(str_detect(Response, "unsupervised help"), "Yes", "No"),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data6<- mutate(cleaned_data6,
+                       Response = recode(Response,
+                                        "I offer some help, but the person does it mostly independently" = "guidance",
+                       "I provide ongoing assistance while next to the person" = "ongoing assistance",
+                       "I use the person's account on their behalf, while they are present" = "in-person help",
+                       "I use the person's account on their behalf, even when they are not present" = "unsupervised help",
+                       "Not Applicable" = "Not Applicable",
+                                         .default = Response
+                       ))
+cleaned_data6 <- cleaned_data6 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "guidance"), "Yes", "No"),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoing assistance"), "Yes", "No"),
+    in_person_help = ifelse(str_detect(Response, "in-person help"), "Yes", "No"),
+    unsupervised_help = ifelse(str_detect(Response, "unsupervised help"), "Yes", "No"),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data6)
+
+```
+
+```{r}
+# file_path <- "cleaned_data6.csv"
+
+# Export the data frame to a CSV file
+# write.csv(cleaned_data6, file = file_path, row.names = FALSE)
+# getwd()
+```

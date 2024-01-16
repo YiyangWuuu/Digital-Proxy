@@ -1,0 +1,650 @@
+---
+title: "US & SG dataset"
+author: "Wu Yiyang"
+date: "2023-11-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readr)
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(corrplot)
+library(dplyr)
+```
+
+```{r}
+digital_proxy_raw <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/raw_combined.csv")
+```
+
+
+# Data Cleaning
+
+
+```{r}
+# divide Country into US and SG
+digital_proxy_raw<- mutate(digital_proxy_raw,
+                       Country = recode(Citizen,
+                                        'US Citizen' = "US",
+                                        'US Permanent Resident (i.e., Green card holder)' = "US",
+                                        'Singapore Citizen' = "SG",
+                                        'Singapore Permanent Resident' = "SG",
+                                        .default = Citizen
+                       ))
+digital_proxy_raw <- digital_proxy_raw %>%
+  select(Country, everything())
+
+```
+
+
+```{r}
+raw_digital_proxy<-digital_proxy_raw%>%
+  subset(select = -c(StartDate, EndDate, Status, IPAddress, Progress, Duration, Finished, RecordedDate, ResponseId, RecipientFirstName, RecipientLastName, RecipientEmail, ExternalReference, LocationLatitude, LocationLongitude, DistributionChannel, UserLanguage, RecaptchaScore, Ageabove, InfoAcknowledge, Consent, OverviewAcknowledge, CommitQuality, opp, gc, term, rid, RISN, LS, V, H, gid, sname, TolunaEnc, BallotBoxStuffing, RelevantIDDuplicate, RelevantIDDuplicateScore, RelevantIDFraudScore))
+raw_digital_proxy <- raw_digital_proxy %>%
+  select(Country, everything())
+```
+
+
+## Age
+```{r}
+raw_digital_proxy <- raw_digital_proxy %>% 
+  mutate(Age = case_when(Age=="21-24" ~ 21,
+                         Age=="25-29" ~ 25,
+                         Age=="30-34" ~ 30,
+                         Age=="35-39" ~ 35,
+                         Age=="40-44" ~ 40,
+                         Age=="45-49" ~ 45,
+                         Age=="50-54" ~ 50,
+                         Age=="55-59" ~ 55,
+                         Age=="60-64" ~ 60,
+                         Age=="65-69" ~ 65,
+                         Age=="70 and above" ~ 70))
+```
+
+
+
+## Housing
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Housing = recode(Housing,
+                                        "HDB 4-Room Flat" = "condos",
+                                        "HDB 3-Room Flat" = "condos",
+                                        "HDB 5-Room or Executive Flat" = "condos",
+                                        "Condominium or other apartment types" = "condos",
+                                        "Landed Property" = "house",
+                                        "HDB 1- or 2-Room Flat" = "dorm",
+                                        "Single-family house (detached house)" = "house",
+                                        "Townhouse (attached house)" = "house",
+                                        "Apartments/Condos" = "condos",
+                                        "Mobile home/trailer" = "trailer",
+                                        "Dorm or institutional housing" = "dorm",
+                                        "Others" = "hotel or RV",
+                                        .default = Housing
+                       ))
+unique_values <- unique(raw_digital_proxy$Housing)
+
+raw_digital_proxy<-raw_digital_proxy%>%
+  subset(select = -c(HousingOthers))
+
+# raw_digital_proxy$HousingOthers
+```
+
+
+
+## Income
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Income = recode(Income,
+                                        "Less than $30,000 US dollars" = "<$30k",
+                                        "$30,000 - $49,999 US dollars" = "$30k-$49k",
+                                        "$50,000 - $99,999 US dollars" = "$50k-$99k",
+                                        "$100,000 - $149,999 US dollars" = "$100k-$149k",
+                                        "$150,000 - $199,999 US dollars" = "$150k-$199k",
+                                        "$200,000+ US dollars and more" = ">$200k",
+                                        .default = Income
+                       ))
+
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Income = recode(Income,
+                                        "Less than $30,000 Singapore dollars" = "<$30k",
+                                        "$30,000 - $49,999 Singapore dollars" = "$30k-$49k",
+                                        "$50,000 - $99,999 Singapore dollars" = "$50k-$99k",
+                                        "$100,000 - $149,999 Singapore dollars" = "$100k-$149k",
+                                        "$150,000 - $199,999 Singapore dollars" = "$150k-$199k",
+                                        "$200,000+ Singapore dollars and more" = ">$200k",
+                                        .default = Income
+                       ))
+```
+
+
+
+## Gender and GenderOthers
+
+```{r}
+# raw_digital_proxy$GenderOthers
+raw_digital_proxy<-raw_digital_proxy%>%
+  subset(select = -c(GenderOthers))
+```
+
+
+## Marital
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Marital = recode(Marital,
+                                        "Single" = "Single",
+                                        "Married" = "Married",
+                                        "Widowed" = "Widowed",
+                                        "Separated" = "Sep/Div",
+                                        "Divorced" = "Sep/Div",
+                                        "Not reported" = "NA",
+                                        .default = Marital
+                       ))
+```
+
+
+## Ethnicity
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Ethnicity = recode(Ethnicity,
+                                        "White" = "White",
+                                        "Black" = "Black",
+                                        "Asian" = "Asian",
+                                        "American Indian" = "American Indian",
+                                        "His/Lat" = "His/Lat",
+                                        "American Indian or Alaska Native" = "American Indian",
+                                        "American Indian"="American Indian",
+                                        "American Indian or Alaska Native,Hispanic or Latino"="American Indian",
+                                        "Asian" = "Asian",
+                                        "Black or African American" = "Black",
+                                        "Black or African American,Hispanic or Latino"= "Black",
+                                        "American Indian or Alaska Native,Black or African American"="Black",
+                                        "American Indian or Alaska Native,Black or African American,White"="White",
+                                        "American Indian or Alaska Native,Hispanic or Latino,White"="White",
+                                        "Hispanic or Latino" = "His/Lat",
+                                        "Native Hawaiian or other Pacific Islander" = "Mixed",
+                                        "American Indian or Alaska Native,White"="White",
+                                        "Black or African American,White"="White",
+                                        "Hispanic or Latino,White"="White",
+                                        "American Indian or Alaska Native,Black or African American,Hispanic or Latino,White"="White",
+                                        "American Indian or Alaska Native,Black or African American,White"="White",
+                                        "American Indian or Alaska Native,Black or African American,Hispanic or Latino,Others"="Others",
+                                        "Asian,Others"="Others",
+                                        "American Indian or Alaska Native,White"="White",
+                                        "American Indian or Alaska Native,Black or African American,Hispanic or Latino,White,Others"="Others",
+                                        "Hispanic or Latino,Native Hawaiian or other Pacific Islander"="His/Lat",
+                                        "Asian,White"="White",
+                                        "others" = "Others",
+                                        .default = Ethnicity
+                       ))
+
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Ethnicity = recode(Ethnicity,
+                                        "Malay" = "Malay",
+                                        "Chinese" = "Chinese",
+                                        "Eurasian" = "Eurasian",
+                                        "Indian" = "Indian",
+                                        "Chinese,Eurasian" = "Chinese,Eurasian",
+                                        "Others" = "Others",
+                                        .default = Ethnicity
+                       ))
+
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       EthnicityOthers = recode(EthnicityOthers,
+                                        "Vietnam" = "Asian",
+                                        "Mixed white black"="Mixed white black",
+                                        "american"="American",
+                                        "Other black" = "Other black",
+                                        "Western European" = "Western European",
+                                        .default = Ethnicity
+                       ))
+
+unique(raw_digital_proxy$Ethnicity)
+unique(raw_digital_proxy$EthnicityOthers)
+```
+
+
+## Religion
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Religion_New = recode(Religion,
+                                        "Protestant" = "Protestant",
+                                        "Catholic" = "Catholic",
+                                        "Mormon" = "Mormon",
+                                        "Jehovah Witness" = "Jehovah Witness",
+                                        "Jewish" = "Jewish",
+                                        "Muslim" = "Muslim",
+                                        "Buddhist" = "Buddhist",
+                                        "Hindu" = "Hindu",
+                                        "No Religion" = "No Religion",
+                                        "Christian" = "Christian",
+                                        "PNA" = "PNA",
+                                        "Agnos" = "Agnos",
+                                        "Spiritualist" = "Spiritualist",
+                                        "Pagan" = "Pagan",
+                                        "Hindu" = "Hindu",
+                                        "Islam" = "Islam",
+                                        "Buddhism" = "Buddhism",
+                                        "Christianity" = "Christian",
+                                        "Catholicism" = "Catholicism",
+                                        "Hinduism" = "Hinduism",
+                                        "others" = "Others",
+                                        "Taoism" = "Taoism",
+                                        .default = Religion
+                       ))
+
+
+raw_digital_proxy <- raw_digital_proxy %>%
+  select(Country, Age, Housing, Income, Gender, Marital, Ethnicity, EthnicityOthers, Religion, Religion_New, everything())
+
+
+
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       ReligionOthers = recode(ReligionOthers,
+                                        "Christian" = "Christian",
+                                        "Cristian"="Christian",
+                                        "christian"="Christian",
+                                        "Cathlic"="Catholic",
+                                        "Born again Christian" = "Christian",
+                                        "Nondenominational Cristian" = "Christian",
+                                        "Christian nondenominational"="Christian",
+                                        "Catholic" = "Catholic",
+                                        "CHRIST FOLLOWER" = "Christian",
+                                        "cristans"="Christian",
+                                        "Christianity" = "Christian",
+                                        "believe in God" = "Christian",
+                                        "Wiccan"= "Pagan",
+                                        "Byzantine Catholic"="Catholic",
+                                        "Spiritualist" = "Spiritualist",
+                                        "pagan" = "Pagan",
+                                        .default = ReligionOthers
+                       ))
+
+unique(raw_digital_proxy$ReligionOthers)
+unique(raw_digital_proxy$Religion)
+
+```
+
+
+## Education
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Education = recode(Education,
+                                        "No Degree" = "High School and below",
+                                        "High School Degree" = "High School and below",
+                                        "Some College, did not graduate" = "College",
+                                        "Associate's Degree Occupational/Academic" = "College",
+                                        "Bachelor's Degree" = "Bachelor",
+                                        "Master's, Professional or Doctorate Degree" = "Master and above",
+                                        "University" = "Bachelor",
+                                        "Post Secondary (non-tertiary)" = "College",
+                                        "Diploma and Professional Qualification" = "Master and above",
+                                        "Below Secondary" = "High School and below",
+                                        "Secondary" = "High School and below",
+                                        .default = Education
+                       ))
+
+unique(raw_digital_proxy$Education)
+```
+
+
+## Employment
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       Employment = recode(Employment,
+                                        "Full-time employment" = "Full-time",
+                                        "Part-time employment" = "Part-time",
+                                        "Unemployed, but currently seeking job opportunities" = "Unemployed but seeking",
+                                        "Unemployed, and not seeking job opportunities" = "Unemployed not seeking",
+                                        "Retired" = "Retired",
+                                        "Student" = "Student",
+                                        "Disabled" = "Disabled",
+                                        "Homemaker" = "Homemaker",
+                                        "Self-employed" = "Self-employed",
+                                        "others" = "Others",
+                                        .default = Employment
+                       ))
+
+
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       EmploymentOthers = recode(EmploymentOthers,
+                                        "Student" = "Student",
+                                        "Part-time employment and Retired" = "Part-time",
+                                        "Disabled" = "Disabled",
+                                        "Student, disability" = "Disabled",
+                                        "self employed" = "Self-employed",
+                                        "Self employed" = "Self-employed",
+                                        "Homemaker" = "Homemaker",
+                                        "Filed for Disability" = "Disabled",
+                                        "Gig work" = "Part-time",
+                                        "disabled" = "Disabled",
+                                        "Self" = "Self-employed",
+                                        "retired/disabaled" = "Disabled",
+                                        "Didabled" = "Disabled",
+                                        "Self-employed." = "Self-employed",
+                                        "homemaker" = "Homemaker",
+                                        "student" = "Student",
+                                        "Self-employed / Freelance" = "Self-employed",
+                                        "freelance" = "Self-employed",
+                                        "Full time studies" = "Student",
+                                        "freelance doing handicraft" = "Self-employed",
+                                        .default = ReligionOthers
+                       ))
+
+
+unique(raw_digital_proxy$Employment)
+unique(raw_digital_proxy$EmploymentOthers)
+
+# Disabled
+```
+
+
+## HelpFam, HelpRel, HelpFre, HelpOthers
+
+```{r}
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$HelpImmediateFam), ]
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$HelpRelatives), ]
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$HelpFriends), ]
+
+#data_filtered <- raw_digital_proxy %>%filter(HelpOthers != "none", HelpOthers != "None",HelpOthers != "NONE",HelpOthers != "N/A",HelpOthers != "0",HelpOthers != "no others",HelpOthers != "no one",HelpOthers != "Na",HelpOthers != "NA")
+# data_filtered$HelpOthers
+
+raw_digital_proxy <- raw_digital_proxy %>%
+  mutate(HelpOthers_new = case_when(
+    HelpOthers %in% c("worked with developmentally disabled adults","Co worker","Co-worker","Co worker","co-worker","Patient advocacy","Home health care","I worked for a caregiver company","Healthcare r","work","Job","Health care","My previous job I assisted vulnerable adults with daily activities","Work","Co workers","co-workers","Worked at a nursing facility","Work as direct support professional","Helpers","coworkers","Patients","Patient","Client") ~ "Work",
+    HelpOthers %in% c("Mom","Grandparents","Children","son","grandfather","Son","Parents","Grandpa","Spouse","spouse","Children","Grandmother","Mother","Grandma","Grand parent","Father and Mother","Ex wife","Child","grandparents","parents","Grandkids and my adult kids","children","baby","Dad","Parent","child") ~ "Family",
+    HelpOthers %in% c("Uncle","Aunt","Siblings","Girlfriend","aunty","cousin","Boyfriend","Father in law","Cousins","cousin","God sister","Brother","My fiancee","my brother","Sibling","sister","boyfriend","Cousin","relative")~ "Relatives",
+    HelpOthers %in% c("friend","Friends Parents","Partner","my partner","friend","Colleage","My boss's parents","Buisness partners","colleagues","Colleague","Friend","Colleagues","Employer","Close friend","Relatives of my close friend","Friends","friends","Partner or strwnger","Friend of family","Some work mate")~ "Friends & partners",
+    HelpOthers %in% c("non relative", "People","Not applicable","test","College Sir","Nice","colic","DThe was the only","czn","Ernest","fr","ccb","cw","In lawa","good","k","In-laws","Inlaw","Bff","In-Laws","sfsfsdf","I’m","A dog","this sucks","ACCIDENT","Great","Horse","Assisted living","not applicable","?","Walmart","mn","clean","Inlaws","great","Pets","You can","Fffff","Gfugu","Pets","Eyes and eyes","Not related")~ "Irrelevant",
+    HelpOthers %in% c("Other","miscellaneous","2","1","5","no body","others","4","6","H","7","3","Aquantinces","-","10","STRANGER","Stranger","Acquaintance","NIL","Adults","Worker","Not sure","STRANGERS","Others","Seniors","I","strangers","Girl","Randoms","Significant other","Elders","Church member","Outside adults","my boss","Employer","ACQAUINTENCE","Girls","Student","acquaint","boss","Out side people","Neighbor","stranger","Neighbour","Neighbors","Nwighbors","neightbour","heighbors","neighbors","neighbor","neighbours","neighbour","Residents in a nursing home","Self","Acquaintances")~ "Others",
+    HelpOthers %in% c("no one else","none","None","No","No one","nobody","Non family","Nothing","Not","nobody","0",",0","N.A.","non","nill","no  others","none but you required the number box to be filled","n/a","N/A","Na","No others","N/a","n/a","O","no one","na","No One","no","Zero","NONE","No e","nothing","No others","no other","nil","Nil","nonr","non others but your survey does not allow me to leave this blank","Ni","no others","n.a","none3","None.")~ "None",
+    TRUE ~ HelpOthers  # Keep other statuses unchanged
+  ))
+# raw_digital_proxy$HelpOthers_new
+
+HelpOthers_data<-data.frame(raw_digital_proxy$HelpOthers,raw_digital_proxy$HelpOthers_new)
+
+unique(raw_digital_proxy$HelpOthers_new)
+
+# data_filtered$HelpOthers
+
+```
+
+
+
+# Helping with Legal/Financial Matters
+
+## FinanceHelpFam, FinanceHelpRel, FinanceHelpFre, FinanceHelpOthers
+
+```{r}
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$FinanceHelpImmediateFam), ]
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$FinanceHelpRelatives), ]
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$FinanceHelpFriends), ]
+
+#data_filtered <- raw_digital_proxy %>%filter(FinanceHelpOthers != "none",FinanceHelpOthers != "None",FinanceHelpOthers != "NONE",FinanceHelpOthers != "N/A",FinanceHelpOthers != "N/a",FinanceHelpOthers != "n/a",FinanceHelpOthers != "n.a",FinanceHelpOthers != "0",FinanceHelpOthers != "no others",FinanceHelpOthers != "no one",FinanceHelpOthers != "no",FinanceHelpOthers != "na",FinanceHelpOthers != "nil",FinanceHelpOthers != "Nil",FinanceHelpOthers != "Na")
+
+
+raw_digital_proxy <- raw_digital_proxy %>%
+  mutate(FinanceHelpOthers_new = case_when(
+    FinanceHelpOthers %in% c("clients", "worked in a home for developed disabled", "Co worker","Partner","my patents","client","Work","co-worker","Co workers","Worker") ~ "Work",
+    
+    FinanceHelpOthers %in% c("parents", "Mom","Grandparents","Children","my patents","son","baby","grandfather","Spouse","Parents","spouse","Grandmother","Mom and dad","Mother","Grandma","Father & Mother","Son","mother") ~ "Family",
+    
+    FinanceHelpOthers %in% c("friend","Porn friends","Friends","friend czn","Colleagues","Workmate","work partner","Buisness partners","colleagues","Colleague","Friend")~ "Friends & partners",
+    
+    FinanceHelpOthers %in% c("Uncle","Aunt","Siblings","Cousins","Girl friend","Boyfriend","cousin","aunty","Father in law","cousin","stepsis","God sister","Girlfriend","Senior")~ "Relatives",
+    
+    FinanceHelpOthers %in% c("non relatives","People","Fredm","ccb","The first time","colic","test","Not related","Nice","Non family","ss","in-laws","G","Dont have","Ernest","Beneficiaries of donor","not applicable",".","fd","The","In laws","NIP","good","In-laws","Inlaw")~ "Irrelevant",
+    
+    FinanceHelpOthers %in% c("Other","Not applicable","miscellaneous","nine","Lo","7000000","5","dxd","Bubby","2","Acquaintance","Acquaintances","-","10","1","stranger","Neighbors","Strangers","Sir","Adult","Nrighbour","Neighbour","Neighbour","neighbour","stranger","STRANGER","Stranger","4","8","Others","others","Adults","Helper","neihbours","p","OTHERS")~ "Others",
+    
+    FinanceHelpOthers %in% c("0","no one","none","None","no one else.","nonw","Na","na","NONE","nobody","no others","no other","nil","Nil","NIL","N/A","n/a","no body","nill","Nothing","N/A","no","None","N/a","No one",",0","Not","Not sure","n.a","N.A.","non","no one")~ "None",
+    
+    TRUE ~ FinanceHelpOthers  # Keep other statuses unchanged
+  ))
+
+# raw_digital_proxy$FinanceHelpOthers_new
+
+unique(raw_digital_proxy$FinanceHelpOthers_new)
+unique(raw_digital_proxy$FinanceHelpOthers)
+
+
+FinanceHelpOthers_data<-data.frame(raw_digital_proxy$FinanceHelpOthers,raw_digital_proxy$FinanceHelpOthers_new)
+
+# data_filtered$FinanceHelpOthers
+```
+
+
+
+## FinanceLPAYear
+```{r}
+# raw_digital_proxy$FinanceLPAYear
+raw_digital_proxy <- raw_digital_proxy %>% 
+  mutate(FinanceLPAYear_new = case_when(FinanceLPAYear <=1989 ~ "<=1989",
+                                        FinanceLPAYear >= 1990 & FinanceLPAYear <=1999 ~ "1990-1999",
+                         FinanceLPAYear >= 2000 & FinanceLPAYear <= 2010 ~ "2000-2009",
+                         FinanceLPAYear >= 2010 & FinanceLPAYear <= 2019 ~ "2010-2019",
+                         FinanceLPAYear >= 2020 ~ ">=2020"))
+
+FinanceLPAYear_data<-data.frame(raw_digital_proxy$FinanceLPAYear,raw_digital_proxy$FinanceLPAYear_new)
+
+```
+
+
+
+
+
+## FinanceManageReasonsOthers
+```{r}
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       FinanceManageReasonsOthers = recode(FinanceManageReasonsOthers,
+                       "They did not have apps"  = "do not have device",
+                       "Navigation of government websites." = "concerns data",
+                       "To have shared oversight of bank account" = "concerns data",
+                       "autism" = "physical limitations",
+                       "Late stage dementia diagnosis" = "physical limitations",
+                       "They can't read, 91 years old." = "physical limitations",
+                       "No time" = "cognitive limiation",
+                       .default = FinanceManageReasonsOthers
+                       ))
+
+unique(raw_digital_proxy$FinanceManageReasonsOthers)
+unique(raw_digital_proxy$FinanceManageReasonsOthers)
+```
+
+
+```{r}
+# raw_digital_proxy$FinanceManageReasonsOthers
+```
+
+
+
+
+## Medical Delegation
+
+## MedicalHelpImmediateFam, MedicalHelpRelatives, MedicalHelpFriends, MedicalHelpOthers
+
+```{r}
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$MedicalHelpImmediateFam), ]
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$MedicalHelpRelatives), ]
+raw_digital_proxy <- raw_digital_proxy[complete.cases(raw_digital_proxy$MedicalHelpFriends), ]
+
+#data_filtered <- raw_digital_proxy %>%filter(MedicalHelpOthers != "none",MedicalHelpOthers != "None",MedicalHelpOthers != "NONE",MedicalHelpOthers != "N/A",MedicalHelpOthers != "N/a",MedicalHelpOthers != "n/a",MedicalHelpOthers != "n.a",MedicalHelpOthers != "0",MedicalHelpOthers != "no others",MedicalHelpOthers != "no one",MedicalHelpOthers != "no",MedicalHelpOthers != "na",MedicalHelpOthers != "nil",MedicalHelpOthers != "Nil",MedicalHelpOthers != "Na")
+
+
+# data_filtered$MedicalHelpOthers
+
+raw_digital_proxy <- raw_digital_proxy %>%
+  mutate(MedicalHelpOthers_new = case_when(
+    MedicalHelpOthers %in% c("Patients","Individuals I gave TLC to when I worked for a caregiver company","Home Health","worked in a home for developmentally disabled","Client through job","Clients","Co worker","co-worker","Patients","Individuals I gave TLC to when I worked for a caregiver company") ~ "Work",
+    
+    MedicalHelpOthers %in% c("parents","Mom","Grandparents","Spouse","Children","my parents","son","grandfather","Son","Wife","baby","Parents","Grandmother","Mom","mother, son","Grandma","Mother","parents","Mom") ~ "Family",
+    
+    MedicalHelpOthers %in% c("Partner","friend","Friend","Buisness partners","colleagues","Colleague","Colleagues")~ "Friends & partners",
+    
+    MedicalHelpOthers %in% c("Cousins","Uncle","My fiancee","Siblings","Aunt","Girlfriend","cousin","Boyfriend","step-dad","aunty","Father in law","cousins","Girlfriend","God sister","My fiancee","Cousins")~ "Relatives",
+    
+    MedicalHelpOthers %in% c("non relative","Not applicable","m","Test","Sir","Nice","colic","The only way","Not related","df","knn","cc","NIP","deez nuts","good","In-laws","Inlaw","in-laws","non relative","l")~ "Irrelevant",
+    
+    MedicalHelpOthers %in% c("1","Other","Strangers","2","miscellaneous","Other","5","Neighbour","others","3","Non family","Others","Nursing home residents","6","Adult","People","4","70","5","Acquaintances","Helper","czn friend","Many","10","Stranger","STRANGER","Neighour","stranger","Ernest","neighbour","Acquaintance","strager","Nrighbour","Adults","3","Worker","OTHERS","Seniors","strangers")~ "Others",
+    
+    MedicalHelpOthers %in% c("0","None","no one","N/A","none","N/a","n/a","No one else.","na","no","NONE","Na","nobody","mone","No","no body","no","no others","no other","Nothing","No one","nil","-","Nil","Dont have","NIL","Not sure","No e","n.a","N.A.","no one","O","None","non",".","nill")~ "None",
+    TRUE ~ MedicalHelpOthers  # Keep other statuses unchanged
+  ))
+
+# raw_digital_proxy$MedicalHelpOthers_new
+
+
+MedicalHelpOthers_data<-data.frame(raw_digital_proxy$MedicalHelpOthers,raw_digital_proxy$MedicalHelpOthers_new)
+
+unique(raw_digital_proxy$MedicalHelpOthers_new)
+
+```
+
+
+## FinanceJointAccount
+```{r}
+# raw_digital_proxy$FinanceJointAccount
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       FinanceJointAccount_new = recode(FinanceJointAccount,
+                                        "Yes, I have a joint-alternate account (where account holders can perform transactions independently, and you do not need consent from the other account holders.)" = "Yes. Joint-alternate",
+                                        "Yes, I have a joint-all account (where all account holders must agree to all transactions)" = "Yes. Joint-all",
+                                        "Yes, I have a joint-alternate account and joint-all account account" = "Joint-alternate_Joint-all",
+                                        "No, I do not have any joint account for helping purposes." = "No",
+                                        "Unsure" = "Unsure",
+                                        .default = FinanceJointAccount
+                       ))
+FinanceJointAccount_data<-data.frame(raw_digital_proxy$FinanceJointAccount,raw_digital_proxy$FinanceJointAccount_new)
+```
+
+
+## FinanceManageReasons
+```{r}
+# raw_digital_proxy$FinanceManageReasons
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       FinanceManageReasons_new = recode(FinanceManageReasons,
+                       "The app was not user-friendly for them" = "not user-friendly",
+                       "They see using the app as a difficult task that should be avoided" = "difficult",
+                       "They have concerns about sharing their data with third parties" = "concerns data",
+                       "They are unfamiliar with using a technology device to access the app" = "unfamiliar",
+                       "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app" = "physical limitations",
+                       "They do not have a device or equipment to access their digital accounts" = "do not have device",
+                       "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app" = "cognitive limiation",
+                       "Others (please specify)" = "Others",
+                       .default = FinanceManageReasons
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceManageReasons,raw_digital_proxy$FinanceManageReasons_new)
+```
+
+
+
+## FinanceLoginWays
+```{r}
+# raw_digital_proxy$FinanceLoginWays
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       FinanceLoginWays_new = recode(FinanceLoginWays,
+                       "I know the username and password for their online account(s)" = "username and password",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "fingerprint",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "donot know",
+                       "The institution has given me my own separate login and password to help manage their online account(s)" = "proxy account",
+                       .default = FinanceLoginWays
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceLoginWays,raw_digital_proxy$FinanceLoginWays_new)
+```
+
+## FinanceServiceWays
+```{r}
+# raw_digital_proxy$FinanceServiceWays
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       FinanceServiceWays_new = recode(FinanceServiceWays,
+                       "I offer some help, but the person does it mostly independently" = "guidance",
+                       "I provide ongoing assistance while next to the person" = "ongoing assistance",
+                       "I use the person's account on their behalf, while they are present" = "in-person help",
+                       "I use the person's account on their behalf, even when they are not present" = "unsupervised help",
+                       "Not Applicable" = "Not Applicable",
+                       .default = FinanceServiceWays
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceServiceWays,raw_digital_proxy$FinanceServiceWays_new)
+```
+
+## DigitalAssistReasons
+```{r}
+# raw_digital_proxy$DigitalAssistReasons
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       DigitalAssistReasons_new = recode(DigitalAssistReasons,
+                       "The app was not user-friendly for them" = "not user-friendly",
+                       "They see using the app as a difficult task that should be avoided." = "difficult",
+                       "They have concerns about sharing their data with third parties." = "concerns data",
+                       "They are unfamiliar with using a technology device to access the app." = "unfamiliar",
+                       "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app." = "physical limitations",
+                       "They do not have a device or equipment to access their digital accounts." = "do not have device",
+                       "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app." = "cognitive limiation",
+                       "Others (Please Specify)" = "Others",
+                       .default = DigitalAssistReasons
+                       ))
+DigitalAssistReasons_data<-data.frame(raw_digital_proxy$DigitalAssistReasons,raw_digital_proxy$DigitalAssistReasons_new)
+```
+
+
+## DigitalAssistAccessWays
+```{r}
+# raw_digital_proxy$DigitalAssistAccessWays
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       DigitalAssistAccessWays_new = recode(DigitalAssistAccessWays,
+                       "I know the username and password for their online account(s)" = "username and password",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "fingerprint",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "donot know",
+                       "The institution has given me my own separate login and password to help manage manage their online account(s)" = "proxy account",
+                       .default = DigitalAssistAccessWays
+                       ))
+DigitalAssistAccessWays_data<-data.frame(raw_digital_proxy$DigitalAssistAccessWays,raw_digital_proxy$DigitalAssistAccessWays_new)
+```
+
+
+## DigitalAssistUseWays
+```{r}
+# raw_digital_proxy$DigitalAssistUseWays
+raw_digital_proxy<- mutate(raw_digital_proxy,
+                       DigitalAssistUseWays_new = recode(DigitalAssistUseWays,
+                       "I offer some help, but the person does it mostly independently" = "guidance",
+                       "I provide ongoing assistance while next to the person" = "ongoing assistance",
+                       "I use the person's account on their behalf, while they are present" = "in-person help",
+                       "I use the person's account on their behalf, even when they are not present" = "unsupervised help",
+                       "Not Applicable" = "Not Applicable",
+                       .default = DigitalAssistUseWays
+                       ))
+DigitalAssistUseWays_data<-data.frame(raw_digital_proxy$DigitalAssistUseWays,raw_digital_proxy$DigitalAssistUseWays_new)
+```
+
+
+
+
+
+
+```{r}
+columns_convert <- c("HelpFoodFuture", "HelpHousekeepFuture", "HelpLaundryFuture", "HelpTransportFuture", "HelpMedFuture", "HelpFinanceFuture", "HelpDigitalFuture", "FinanceDecisionSupportFuture", "FinanceActionFuture", "MedicalMakeApptFuture", "MedicalAccompanyApptFuture", "MedicalTakeMedsFuture", "MedicalSeeTreatmentFuture")
+raw_digital_proxy <- raw_digital_proxy %>%
+  mutate(across(columns_convert, tolower))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

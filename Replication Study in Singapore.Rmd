@@ -1,0 +1,151 @@
+---
+title: "Replication Study in Singapore"
+author: "Wu Yiyang"
+date: "2024-01-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(corrplot)
+library(dplyr)
+```
+
+```{r}
+raw_digital_proxy <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/US_SG_dataset.csv")
+digital_proxyUS <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/US_dataset.csv")
+digital_proxySG <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/SG_dataset.csv")
+# view(digital_proxySG)
+```
+
+
+# Modeling Types of Digital Proxies in Singapore
+```{r}
+# mutate ADL and IADL into score in data descriptions file
+
+# Calculate the sum of IADL for each person
+digital_proxySG$sum_IADL <- rowSums(digital_proxySG[, c("HelpFood", "HelpHousekeep", "HelpLaundry", "HelpTransport", "HelpMed", "HelpFinance","HelpDigital")])
+
+# Calculate the sum of ADL for each person
+digital_proxySG$sum_ADL <- rowSums(digital_proxySG[, c("ADLBath", "ADLGroom", "ADLToilet", "ADLTransfer", "ADLIncontinence", "ADLFeed")])
+
+#normalized score= (sum−min possible sum)/(max possible sum−min possible sum)
+# Normalize the sum scores to a range of 0-1
+max_possible_sum_IADL <- ncol(digital_proxySG[, c("HelpFood", "HelpHousekeep", "HelpLaundry", "HelpTransport", "HelpMed", "HelpFinance","HelpDigital")]) * 4
+digital_proxySG$normalized_scores_IADL <- (digital_proxySG$sum_IADL - 0) / (max_possible_sum_IADL - 0)
+
+# Normalize the sum scores to a range of 0-1
+max_possible_sum_ADL <- ncol(digital_proxySG[, c("ADLBath", "ADLGroom", "ADLToilet", "ADLTransfer", "ADLIncontinence", "ADLFeed")]) * 4
+digital_proxySG$normalized_scores_ADL <- (digital_proxySG$sum_ADL - 0) / (max_possible_sum_ADL - 0)
+```
+
+
+```{r}
+mutate_Digital <- function(data_frame, variable_name) {
+  data_frame <- data_frame %>% 
+    mutate(!!variable_name := case_when(
+      !!as.name(variable_name) == "Yes"   ~ 1,
+      !!as.name(variable_name) == "No"  ~ 0
+    ))
+
+  return(data_frame)
+}
+
+digital_proxySG <- mutate_Digital(digital_proxySG, "FinanceDigitalAssistance")
+# digital_proxySG$FinanceDigitalAssistance
+
+digital_proxySG<- mutate_Digital(digital_proxySG, "DigitalAssistMedical")
+# digital_proxySG$DigitalAssistMedical
+
+```
+
+
+```{r}
+# SG financial model
+SG_financial_model <- glm(FinanceDigitalAssistance ~ Age + Income + Gender + Education + Marital + digital_proxySG$normalized_scores_IADL + digital_proxySG$normalized_scores_ADL, data = digital_proxySG, family = binomial(link = "logit"))
+
+# View the summary of the model
+summary(SG_financial_model)
+
+confint(SG_financial_model)
+```
+
+
+Variable | Coefficient | Estimate | Standard Error | z-value | p-value |
+| --- | --- | --- | --- | --- | --- | 
+|(Intercept) | $\hat{\beta}_0$ | -0.57041 | 0.86458 | -0.660 | 0.5094 | 
+| Age | $\hat{\beta}_1$ | -0.05602 | 0.01350 | -4.151 | 3.31e-05 *** | 
+| Income: >200k | $\hat{\beta}_2$ | 0.48610 | 0.78951 | 0.616 | 0.5381 |
+| Income: 100k-149k | $\hat{\beta}_3$ | 0.44860 | 0.53212 | 0.843 | 0.3992 |
+| Income: 150k-199k | $\hat{\beta}_4$ | 0.70153 | 0.67177 | 1.044 | 0.2963 |
+| Income: 30k-49k | $\hat{\beta}_5$ | 1.20635 | 0.57214 | 2.108 | 0.0350 * |
+| Income: 50k-99k | $\hat{\beta}_6$ | 0.75697 | 0.50354 | 1.503 | 0.1328 |
+| Gender: Male | $\hat{\beta}_7$ | 0.32974 | 0.30932 | 1.066 | 0.2864 |
+| Education: College | $\hat{\beta}_8$ | -0.87828 | 0.52086 | -1.686 | 0.0918 . |
+| Education: High School and below | $\hat{\beta}_9$ | -0.25258 | 0.48912 | -0.516 | 0.6056 |
+| Education: Master and above | $\hat{\beta}_10$ | 0.19374 | 0.43951 | 0.441 | 0.6594 |
+| Marital: Sep/Div | $\hat{\beta}_{11}$ | 0.45207 | 0.81467 | 0.555 | 0.5790 |
+| Marital: Single | $\hat{\beta}_{12}$ | -0.77063 | 0.38886 | -1.982 | 0.0475 * |
+| Marital: Widowed | $\hat{\beta}_{13}$ | 0.15216 | 1.11152 | 0.137 | 0.8911 |
+| IADL | $\hat{\beta}_{14}$ | 3.87280 | 0.84871 | 4.563 | 5.04e-06 *** |
+| ADL | $\hat{\beta}_{15}$ | 0.70059 | 0.53720 | 1.304 | 0.1922 |
+
+
+```{r}
+# SG Medical model
+SG_Medical_model <- glm(DigitalAssistMedical ~ Age  + Gender + Education + Employment + Siblings+ Ethnicity + Marital + digital_proxySG$normalized_scores_IADL + digital_proxySG$normalized_scores_ADL, data = digital_proxySG, family = binomial(link = "logit"))
+
+# View the summary of the model
+summary(SG_Medical_model)
+
+confint(SG_Medical_model)
+```
+
+  
+
+Variable | Coefficient | Estimate | Standard Error | z-value | p-value |
+| --- | --- | --- | --- | --- | --- | 
+|(Intercept) | $\hat{\beta}_0$ | 0.37123 | 0.78301 | 0.474 | 0.635427 | 
+| Age | $\hat{\beta}_1$ | -0.05342 | 0.01461 | -3.655 | 0.000257 *** | 
+| Gender: Male | $\hat{\beta}_2$ | 0.16899 | 0.31439 | 0.538 | 0.590911 |
+| Education: College | $\hat{\beta}_3$ | -0.61816 | 0.50363 | -1.227 | 0.219675 |
+| Education: High School and below | $\hat{\beta}_4$ | -0.02869 | 0.46219 | -0.062 | 0.950509 |
+| Education: Master and above | $\hat{\beta}_5$ | -0.42203 | 0.41449 | -1.018 | 0.308586 |
+| Employment: Part-time | $\hat{\beta}_6$ | -0.84618 | 0.50297 | -1.682 | 0.092497 . |
+| Employment: Retired | $\hat{\beta}_7$ | 0.49874 | 0.73009 | 0.683 | 0.494533 |
+| Employment: Self-employed | $\hat{\beta}_8$ | 0.06743 | 1.30761 | 0.052 | 0.958874 |
+| Employment: Student | $\hat{\beta}_9$ | -15.67967 | 944.56044 | -0.017 | 0.986756 |
+| Employment: Unemployed but seeking | $\hat{\beta}_10$ | 0.06580 | 0.86026 | 0.076 | 0.939035 |
+| Employment: Unemployed not seeking | $\hat{\beta}_11$ | -1.74819 | 1.23352 | -1.417 | 0.156416 |
+| Siblings | $\hat{\beta}_{12}$ | 0.02427 | 0.09465 | 0.256 | 0.797613 |
+| Ethnicity: Chinese,Eurasian | $\hat{\beta}_{13}$ | 16.06376 | 1691.54774 | 0.009 | 0.992423 |
+| Ethnicity: Eurasian | $\hat{\beta}_{14}$ | -1.41054 | 1.23603 | -1.141 | 0.253791 |
+| Ethnicity: Indian | $\hat{\beta}_{15}$ | 0.76859 | 0.72481 | 1.060 | 0.288960 |
+| Ethnicity: Malay | $\hat{\beta}_{16}$ | 0.85902 | 0.48273 | 1.779 | 0.075158 . |
+| Ethnicity: Others | $\hat{\beta}_{17}$ | -1.12593 | 1.28252 | -0.878 | 0.379995 |
+| Marital: Sep/Div | $\hat{\beta}_{18}$ | -0.04438 | 0.77877 | -0.057 | 0.954553 |
+| Marital: Single | $\hat{\beta}_{19}$ | -0.74960 | 0.37013 | -2.025 | 0.042842 * |
+| Marital: Widowed | $\hat{\beta}_{20}$ | 0.75276 | 1.06113 | 0.709 | 0.478081 |
+| IADL | $\hat{\beta}_{21}$ | 2.98661 | 0.80953 | 3.689 | 0.000225 *** |
+| ADL | $\hat{\beta}_{22}$ | 0.66246 | 0.53631 | 1.235 | 0.216744 |
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,142 @@
+---
+title: "Original Study in US"
+author: "Wu Yiyang"
+date: "2024-01-15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(corrplot)
+library(dplyr)
+```
+
+```{r}
+raw_digital_proxy <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/US_SG_dataset.csv")
+digital_proxyUS <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/US_dataset.csv")
+digital_proxySG <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/data/SG_dataset.csv")
+# view(digital_proxyUS)
+```
+
+
+# Modeling Types of Digital Proxies in the United States
+```{r}
+# mutate ADL and IADL into score in data descriptions file
+
+# Calculate the sum of IADL for each person
+digital_proxyUS$sum_IADL <- rowSums(digital_proxyUS[, c("HelpFood", "HelpHousekeep", "HelpLaundry", "HelpTransport", "HelpMed", "HelpFinance","HelpDigital")])
+
+# Calculate the sum of ADL for each person
+digital_proxyUS$sum_ADL <- rowSums(digital_proxyUS[, c("ADLBath", "ADLGroom", "ADLToilet", "ADLTransfer", "ADLIncontinence", "ADLFeed")])
+
+#normalized score= (sum−min possible sum)/(max possible sum−min possible sum)
+# Normalize the sum scores to a range of 0-1
+max_possible_sum_IADL <- ncol(digital_proxyUS[, c("HelpFood", "HelpHousekeep", "HelpLaundry", "HelpTransport", "HelpMed", "HelpFinance","HelpDigital")]) * 4
+digital_proxyUS$normalized_scores_IADL <- (digital_proxyUS$sum_IADL - 0) / (max_possible_sum_IADL - 0)
+
+# Normalize the sum scores to a range of 0-1
+max_possible_sum_ADL <- ncol(digital_proxyUS[, c("ADLBath", "ADLGroom", "ADLToilet", "ADLTransfer", "ADLIncontinence", "ADLFeed")]) * 4
+digital_proxyUS$normalized_scores_ADL <- (digital_proxyUS$sum_ADL - 0) / (max_possible_sum_ADL - 0)
+```
+
+
+```{r}
+mutate_Digital <- function(data_frame, variable_name) {
+  data_frame <- data_frame %>% 
+    mutate(!!variable_name := case_when(
+      !!as.name(variable_name) == "Yes"   ~ 1,
+      !!as.name(variable_name) == "No"  ~ 0
+    ))
+
+  return(data_frame)
+}
+
+digital_proxyUS <- mutate_Digital(digital_proxyUS, "FinanceDigitalAssistance")
+
+digital_proxyUS <- mutate_Digital(digital_proxyUS, "DigitalAssistMedical")
+# digital_proxyUS$DigitalAssistMedical
+
+
+```
+
+
+```{r}
+# US financial model
+US_financial_model <- glm(FinanceDigitalAssistance ~ Age + Income + Gender + Education + Marital + digital_proxyUS$normalized_scores_IADL + digital_proxyUS$normalized_scores_ADL, data = digital_proxyUS, family = binomial(link = "logit"))
+
+# View the summary of the model
+summary(US_financial_model)
+
+confint(US_financial_model)
+
+```
+
+
+Variable | Coefficient | Estimate | Standard Error | z-value | p-value |
+| --- | --- | --- | --- | --- | --- | 
+|(Intercept) | $\hat{\beta}_0$ | -2.955495 | 0.613302 | -4.819 | 1.44e-06 *** | 
+| Age | $\hat{\beta}_1$ | -0.013706 | 0.007423 | -1.846 | 0.0648 . | 
+| Income: >200k | $\hat{\beta}_2$ | -0.024636 | 0.710302 | -0.035 | 0.9723 |
+| Income: 100k-149k | $\hat{\beta}_3$ | 0.629433 | 0.361177 | 1.743 | 0.0814 . |
+| Income: 150k-199k | $\hat{\beta}_4$ | 0.178207 | 0.586770 | 0.304 | 0.7614 |
+| Income: 30k-49k | $\hat{\beta}_5$ | 0.138196 | 0.284541 | 0.486 | 0.6272 |
+| Income: 50k-99k | $\hat{\beta}_6$ | 0.590232 | 0.277392 | 2.128 | 0.0334 * |
+| Gender: Male | $\hat{\beta}_7$ | 0.504879 | 0.200408 | 2.519 | 0.0118 * |
+| Education: College | $\hat{\beta}_8$ | -0.081552 | 0.266607 | -0.306 | 0.7597 |
+| Education: High School and below | $\hat{\beta}_9$ | -0.438520 | 0.283980 | -1.544 | 0.1225 |
+| Education: Master and above | $\hat{\beta}_10$ | 0.791585 | 0.367839 | 2.152 | 0.0314 * |
+| Marital: Sep/Div | $\hat{\beta}_{11}$ | -0.052743 | 0.327503 | -0.161 | 0.8721 |
+| Marital: Single | $\hat{\beta}_{12}$ | -0.381393 | 0.249936 | -1.526 | 0.1270 |
+| Marital: Widowed | $\hat{\beta}_{13}$ | 0.175473 | 0.441627 | 0.397 | 0.6911 |
+| IADL | $\hat{\beta}_{14}$ | 3.847140 | 0.558771 | 6.885 | 5.78e-12 *** |
+| ADL | $\hat{\beta}_{15}$ | 0.818545 | 0.335776 | 2.438 | 0.0148 * |
+
+
+```{r}
+# US Medical model
+US_Medical_model <- glm(DigitalAssistMedical ~ Age  + Gender + Education + Employment + Siblings+ Ethnicity + Marital + digital_proxyUS$normalized_scores_IADL + digital_proxyUS$normalized_scores_ADL, data = digital_proxyUS, family = binomial(link = "logit"))
+
+# View the summary of the model
+summary(US_Medical_model)
+
+confint(US_Medical_model)
+```
+
+
+Variable | Coefficient | Estimate | Standard Error | z-value | p-value |
+| --- | --- | --- | --- | --- | --- | 
+|(Intercept) | $\hat{\beta}_0$ | -2.684684 | 1.193155 | -2.250 | 0.024444 * | 
+| Age | $\hat{\beta}_1$ | -0.034875 | 0.009418 | -3.703 | 0.000213 *** | 
+| Gender: Male | $\hat{\beta}_2$ | 0.474315 | 0.216119 | 2.195 | 0.028186 * |
+| Education: College | $\hat{\beta}_3$ | -0.119965 | 0.277316 | -0.433 | 0.665310 |
+| Education: High School and below | $\hat{\beta}_4$ | -0.204448 | 0.282616 | -0.723 | 0.469425 |
+| Education: Master and above | $\hat{\beta}_5$ | 0.869098 | 0.375770 | 2.313 | 0.020731 * |
+| Employment: Full-time | $\hat{\beta}_6$ | 0.254137 | 0.624148 | 0.407 |0.683880 |
+| Employment: Homemaker | $\hat{\beta}_7$ | 1.418142 | 1.686224 | 0.841 | 0.400339 |
+| Employment: Part-time | $\hat{\beta}_8$ | -0.166286 | 0.663567 | -0.251 | 0.802128 |
+| Employment: Retired | $\hat{\beta}_9$ | 0.072037 | 0.666272 | 0.108 | 0.913901 |
+| Employment: Self-employed | $\hat{\beta}_10$ | -0.990649 | 1.352286 | -0.733 | 0.463819 |
+| Employment: Student | $\hat{\beta}_11$ | 1.021455 | 1.315545 | 0.776 | 0.437483 |
+| Employment: Unemployed but seeking | $\hat{\beta}_{12}$ | -0.313878 | 0.671272 | -0.468 | 0.640080 |
+| Employment: Unemployed not seeking | $\hat{\beta}_{13}$ | -0.674414 | 0.747722 | -0.902 | 0.367079 |
+| Siblings | $\hat{\beta}_{14}$ | 0.108195 | 0.056435 | 1.917 | 0.055217 . |
+| Ethnicity: Asian | $\hat{\beta}_{15}$ | 0.364460 | 0.888344 | 0.410 | 0.681608 |
+| Ethnicity: Black | $\hat{\beta}_{16}$ |  0.922819 | 0.825524 | 1.118 | 0.263627 |
+| Ethnicity: His/Lat | $\hat{\beta}_{17}$ | 0.318257 | 0.881114 | 0.361 | 0.717951 |
+| Ethnicity: Others | $\hat{\beta}_{18}$ | 0.116657 | 1.417092 | 0.082 | 0.934391 |
+| Ethnicity: White | $\hat{\beta}_{19}$ | 0.853349 | 0.801117 | 1.065 | 0.286786 |
+| Marital: Sep/Div | $\hat{\beta}_{20}$ | -0.487521 | 0.337885 | -1.443 | 0.149060 |
+| Marital: Single | $\hat{\beta}_{21}$ | -0.698031 | 0.259098 | -2.694 | 0.007058 ** |
+| Marital: Widowed | $\hat{\beta}_{22}$ | 1.309464 | 0.484203 | 2.704 | 0.006843 ** |
+| IADL | $\hat{\beta}_{23}$ | 3.489482 | 0.584234 | 5.973 | 2.33e-09 *** |
+| ADL | $\hat{\beta}_{24}$ | 0.939081 | 0.352458 | 2.664 | 0.007713 ** |
+
+
+
