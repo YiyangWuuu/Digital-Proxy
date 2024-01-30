@@ -71,6 +71,24 @@ my.dat$Ethnicity <- as.numeric(my.dat$Ethnicity) ###
 
 ```
 
+```{r}
+filterCountryData <- function(xyz) { # create a function with the name my_function
+  test<-my.dat%>%
+    filter(Country==xyz)%>%
+  return(test)
+}
+#digital_proxyUS <- filterCountryData("US")
+#unique(digital_proxyUS$Religion)
+#digital_proxySG <- filterCountryData("SG")
+#unique(digital_proxySG$Religion)
+
+my.dat$Religion <- factor(my.dat$Religion, 
+                           levels = c("Christian", "No Religion", "Catholic", "Jehovah Witness", "Muslim", "Mormon", "Spiritualist", "Pagan", "Jewish", "Hindu", "Buddhist", "Agnostic","Buddhism","Catholicism","No Religion","Islam","Christianity","Taoism","Hinduism"),
+                           labels = c("Christian", "No Religion", "Catholic", "Jehovah Witness", "Muslim", "Mormon", "Spiritualist", "Pagan", "Jewish", "Hindu", "Buddhist", "Agnostic","Buddhism","Catholicism","No Religion","Islam","Christianity","Taoism","Hinduism"))
+my.dat$Religion <- as.factor(as.character(my.dat$Religion))
+my.dat$Religion <- as.numeric(my.dat$Religion) ###
+```
+
 
 ```{r}
 my.dat$Education <- factor(my.dat$Education, 
@@ -639,6 +657,33 @@ Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value 
 McFadden pseudo - $R^2$ to measure how well the model fits:
 $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-307.03/413.82=0.26$
 
+```{r}
+# model summary of coefficients and whether significant
+model_summary <- summary(modelFinLevel1_new)
+
+# find significant predictors (set p-value < 0.1)
+significant_pre <- which(model_summary$coefficients[, "Pr(>|z|)"] < 0.1)
+
+# Calculate Odds Ratios and 95% CI
+odds_ratios <- exp(coef(modelFinLevel1_new)[significant_pre])
+ci <- exp(confint(modelFinLevel1_new)[significant_pre, ])
+
+medical_model_plot <- data.frame(
+  odds_rat = names(odds_ratios),
+  OddsRatio = odds_ratios,
+  Lower_CI = ci[, "2.5 %"],
+  Upper_CI = ci[, "97.5 %"]
+)
+
+# Use ggplot2 to create the plot
+library(ggplot2)
+ggplot(medical_model_plot, aes(x = odds_rat, y = OddsRatio)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.2) +
+  scale_y_log10() +  #plotting odds ratios
+  labs(y = "Odds Ratio", x = "Significant Predictors")
+```
+
 
 ```{r}
 #########-----------_medicalDigitalDelegation START HERE-----------------
@@ -681,4 +726,728 @@ Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value 
 
 McFadden pseudo - $R^2$ to measure how well the model fits:
 $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-313.51/412.49=0.24$
-           
+
+
+```{r}
+# model summary of coefficients and whether significant
+model_summary <- summary(modelMedLevel1_new)
+
+# find significant predictors (set p-value < 0.1)
+significant_pre <- which(model_summary$coefficients[, "Pr(>|z|)"] < 0.1)
+
+# Calculate Odds Ratios and 95% CI
+odds_ratios <- exp(coef(modelMedLevel1_new)[significant_pre])
+ci <- exp(confint(modelMedLevel1_new)[significant_pre, ])
+
+medical_model_plot <- data.frame(
+  odds_rat = names(odds_ratios),
+  OddsRatio = odds_ratios,
+  Lower_CI = ci[, "2.5 %"],
+  Upper_CI = ci[, "97.5 %"]
+)
+
+# Use ggplot2 to create the plot
+library(ggplot2)
+ggplot(medical_model_plot, aes(x = odds_rat, y = OddsRatio)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.2) +
+  scale_y_log10() +  #plotting odds ratios
+  labs(y = "Odds Ratio", x = "Significant Predictors")
+```
+
+
+
+# New SG financial model (all variables)
+```{r, warning=FALSE}
+test.data = filtered.dat[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity',
+                            'Siblings','Marital','Religion', 'SiblingsOrder', 'HelpImmediateFam', 'HelpRelatives', 'HelpFriends', 'HelpPassAway', 'FinanceHelpImmediateFam', 'FinanceHelpRelatives', 'FinanceHelpFriends', 'FinanceHelpPassAway', 'MedicalHelpImmediateFam', 'MedicalHelpRelatives', 'MedicalHelpFriends', 'MedicalHelpPassAway', 'FinanceLPA')]
+
+
+#how much help participants have provided for an adult in carrying out financial tasks
+test.data$financial_tasks = rowSums(filtered.dat[ , c("FinanceDecisionSupport", "FinanceAction", "FinanceLPAUsePersonal", "FinanceLPAUseProperty")])
+
+
+
+#how much help participants have provided for an adult in carrying out their instrumental activities of daily living
+test.data$IADL = rowSums(filtered.dat[ , c("HelpTransport","HelpMed","HelpFinance","HelpFood","HelpLaundry","HelpHousekeep")])
+test.data$IADL <- scale_values(test.data$IADL)
+test.data$IADL <- round(test.data$IADL ,digit=2)
+
+#how much help participants have provided for an adult in carrying out their activities of daily living
+test.data$ADL = rowSums(filtered.dat[ , c("ADLBath","ADLFeed","ADLGroom","ADLIncontinence","ADLToilet","ADLTransfer")]) 
+test.data$ADL <- scale_values(test.data$ADL)
+test.data$ADL <- round(test.data$ADL ,digit=2)
+
+#how much help participants have provided for an adult in carrying out low-stake medical care activities
+test.data$lowstakeMed = rowSums(filtered.dat[ , c("MedicalMakeAppt","MedicalAccompanyAppt","MedicalTakeMeds","MedicalSeeTreatment")])
+
+#how much help participants have provided for an adult in carrying out high-stake medical care activities
+test.data$highstakeMed = rowSums(filtered.dat[ , c("MedicalDecisionPerson","MedicalDecisionDoctor","MedicalSignPapers","MedicalWorthPerson",
+                                                   "MedicalWorthDoctor","MedicalWorthFamily","MedicalEndPerson","MedicalEndFamily",
+                                                   "MedicalFlexibilityPerson","MedicalFlexibilityDoctor","MedicalFlexibilityFamily",
+                                                   "MedicalDoctorQuestions")])
+
+#DEPENDENT VARIABLES HERE
+test.data$FinanceDelegate1 = as.factor(filtered.dat$FinanceDelegate1)
+test.data$FinanceDelegate2 = as.factor(filtered.dat$FinanceDelegate2)
+test.data$MedicalDelegate1 = as.factor(filtered.dat$MedicalDelegate1)
+test.data$MedicalDelegate2 = as.factor(filtered.dat$MedicalDelegate2)
+
+
+
+
+#########-----------_financialDigitalDelegation START HERE-----------------
+#Assist vs. No
+test.data$FinanceDelegate1 = factor(test.data$FinanceDelegate1,
+                                    levels = c("Assist","No"),
+                                    labels = c("1","0"))
+test.data$FinanceDelegate1 <- as.numeric(as.character(test.data$FinanceDelegate1))
+
+modelFinLevel2 <- glm(FinanceDelegate1 ~ . - lowstakeMed - highstakeMed - FinanceDelegate2
+                      - MedicalDelegate1 - MedicalDelegate2 - MedicalHelpImmediateFam - MedicalHelpRelatives - MedicalHelpFriends - MedicalHelpPassAway, data=test.data, family = "binomial")
+
+summary(modelFinLevel2)
+modelFinLevel2_new <- stepAIC(modelFinLevel2)
+summary(modelFinLevel2_new$fitted.values)
+summary(modelFinLevel2_new)
+
+confint(modelFinLevel2_new,level = 0.95)
+confint.default(modelFinLevel2_new)
+```
+
+
+# New SG financial model
+
+Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
+| --- | --- | --- | --- | --- | --- | --- | 
+| (Intercept) | $\hat{\beta}_0$ | -1.22 | 0.91 | -1.34 | [-3.03,0.55] | 0.18 | 
+| Age | $\hat{\beta}_1$ | -0.25 | 0.06 | -4.17 | [-0.37,-0.14] | 3.09e-05 *** | 
+| Housing | $\hat{\beta}_2$ | 0.60 | 0.37 | 1.61 | [-0.12,1.33] | 0.11 | 
+| Religion | $\hat{\beta}_3$ | -0.06 | 0.03 | -1.91 | [-0.12,0.001] | 0.06 . | 
+| HelpFriends | $\hat{\beta}_4$ | -0.18 | 0.09 | -2.08 | [-0.38,-0.022] | 0.04 * | 
+| HelpPassAway | $\hat{\beta}_5$ | -0.40 | 0.26 | -1.52 | [-0.92,0.11] | 0.13 | 
+| Finance HelpImmediateFam | $\hat{\beta}_6$ | 0.31 | 0.14 | 2.18 | [0.035,0.59] | 0.03 * | 
+| Finance HelpPassAway | $\hat{\beta}_7$ | 0.44 | 0.27 | 1.62 | [-0.1,0.96] | 0.11 | 
+| FinanceLPA | $\hat{\beta}_8$ | -0.77 | 0.55 | -1.39 | [-1.89,0.28] | 0.16 | 
+| financial_tasks | $\hat{\beta}_9$ | 0.31 | 0.07 | 4.19 | [0.17,0.46] | 2.77e-05 *** | 
+| IADL | $\hat{\beta}_{10}$ | 1.82 | 0.71 | 2.57 | [0.46,3.24] | 0.01 * | 
+
+
+
+McFadden pseudo - $R^2$ to measure how well the model fits:
+$pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-266.67/413.82=0.356$
+
+
+```{r}
+# model summary of coefficients and whether significant
+model_summary <- summary(modelFinLevel2_new)
+
+# find significant predictors (set p-value < 0.1)
+significant_pre <- which(model_summary$coefficients[, "Pr(>|z|)"] < 0.1)
+
+# Calculate Odds Ratios and 95% CI
+odds_ratios <- exp(coef(modelFinLevel2_new)[significant_pre])
+ci <- exp(confint(modelFinLevel2_new)[significant_pre, ])
+
+medical_model_plot <- data.frame(
+  odds_rat = names(odds_ratios),
+  OddsRatio = odds_ratios,
+  Lower_CI = ci[, "2.5 %"],
+  Upper_CI = ci[, "97.5 %"]
+)
+
+# Use ggplot2 to create the plot
+library(ggplot2)
+ggplot(medical_model_plot, aes(x = odds_rat, y = OddsRatio)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.2) +
+  scale_y_log10() +  #plotting odds ratios
+  labs(y = "Odds Ratio", x = "Significant Predictors")
+```
+
+\newpage
+
+# New SG medical model (all variables)
+
+```{r}
+test.data = filtered.dat[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity',
+                            'Siblings','Marital','Religion', 'SiblingsOrder', 
+'HelpImmediateFam', 'HelpRelatives', 'HelpFriends', 'HelpPassAway', 'FinanceHelpImmediateFam', 'FinanceHelpRelatives', 'FinanceHelpFriends', 'FinanceHelpPassAway', 'MedicalHelpImmediateFam', 'MedicalHelpRelatives', 'MedicalHelpFriends', 'MedicalHelpPassAway', 'FinanceLPA')]
+
+
+#how much help participants have provided for an adult in carrying out financial tasks
+test.data$financial_tasks = rowSums(filtered.dat[ , c("FinanceDecisionSupport", "FinanceAction", "FinanceLPAUsePersonal", "FinanceLPAUseProperty")])
+
+
+
+#how much help participants have provided for an adult in carrying out their instrumental activities of daily living
+test.data$IADL = rowSums(filtered.dat[ , c("HelpTransport","HelpMed","HelpFinance","HelpFood","HelpLaundry","HelpHousekeep")])
+test.data$IADL <- scale_values(test.data$IADL)
+test.data$IADL <- round(test.data$IADL ,digit=2)
+
+#how much help participants have provided for an adult in carrying out their activities of daily living
+test.data$ADL = rowSums(filtered.dat[ , c("ADLBath","ADLFeed","ADLGroom","ADLIncontinence","ADLToilet","ADLTransfer")]) 
+test.data$ADL <- scale_values(test.data$ADL)
+test.data$ADL <- round(test.data$ADL ,digit=2)
+
+#how much help participants have provided for an adult in carrying out low-stake medical care activities
+test.data$lowstakeMed = rowSums(filtered.dat[ , c("MedicalMakeAppt","MedicalAccompanyAppt","MedicalTakeMeds","MedicalSeeTreatment")])
+
+#how much help participants have provided for an adult in carrying out high-stake medical care activities
+test.data$highstakeMed = rowSums(filtered.dat[ , c("MedicalDecisionPerson","MedicalDecisionDoctor","MedicalSignPapers","MedicalWorthPerson",
+                                                   "MedicalWorthDoctor","MedicalWorthFamily","MedicalEndPerson","MedicalEndFamily",
+                                                   "MedicalFlexibilityPerson","MedicalFlexibilityDoctor","MedicalFlexibilityFamily",
+                                                   "MedicalDoctorQuestions")])
+
+#DEPENDENT VARIABLES HERE
+test.data$FinanceDelegate1 = as.factor(filtered.dat$FinanceDelegate1)
+test.data$FinanceDelegate2 = as.factor(filtered.dat$FinanceDelegate2)
+test.data$MedicalDelegate1 = as.factor(filtered.dat$MedicalDelegate1)
+test.data$MedicalDelegate2 = as.factor(filtered.dat$MedicalDelegate2)
+
+#########-----------_medicalDigitalDelegation START HERE-----------------
+#Assist vs. No
+test.data$MedicalDelegate1 = factor(test.data$MedicalDelegate1,
+                                    levels = c("Assist","No"),
+                                    labels = c("1","0"))
+test.data$MedicalDelegate1 <- as.numeric(as.character(test.data$MedicalDelegate1))
+
+modelMedLevel2 <- glm(MedicalDelegate1 ~ .- FinanceDelegate1 - FinanceDelegate2
+                      - MedicalDelegate2 - FinanceHelpImmediateFam - FinanceHelpRelatives - FinanceHelpFriends - FinanceHelpPassAway - FinanceLPA - financial_tasks,
+                      family=binomial, data=test.data)
+
+summary(modelMedLevel2)
+modelMedLevel2_new <- stepAIC(modelMedLevel2)
+summary(modelMedLevel2_new$fitted.values)
+summary(modelMedLevel2_new)
+
+confint(modelMedLevel2_new,level = 0.95)
+confint.default(modelMedLevel2_new)
+
+
+```
+
+
+# New SG Medical model
+
+Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
+| --- | --- | --- | --- | --- | --- | --- | 
+| (Intercept) | $\hat{\beta}_0$ | -4.53 | 1.02 | -4.45 | [-6.60,-2.58] | 8.76e-06 *** | 
+| Age | $\hat{\beta}_1$ | -0.23 | 0.06 | -4.20 | [-0.35,-0.13] | 2.73e-05 *** | 
+| Housing | $\hat{\beta}_2$ | 1.08 | 0.38 | 2.88 | [0.36,1.84] | 0.004 ** | 
+| Ethnicity: Underrepresented | $\hat{\beta}_3$ | 0.24 | 0.10 | 2.46 | [0.05,0.43] | 0.01 * | 
+| lowstakeMed | $\hat{\beta}_4$ | 0.13 | 0.04 | 3.34 | [0.05,0.21] | 0.001 *** | 
+| highstakeMed | $\hat{\beta}_5$ | 0.13 | 0.02 | 5.58 | [0.09,0.18] | 2.48e-08 *** | 
+
+
+McFadden pseudo - $R^2$ to measure how well the model fits:
+$pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-265.49/412.49=0.356$
+
+```{r}
+# model summary of coefficients and whether significant
+model_summary <- summary(modelMedLevel2_new)
+
+# find significant predictors (set p-value < 0.1)
+significant_pre <- which(model_summary$coefficients[, "Pr(>|z|)"] < 0.1)
+
+# Calculate Odds Ratios and 95% CI
+odds_ratios <- exp(coef(modelMedLevel2_new)[significant_pre])
+ci <- exp(confint(modelMedLevel2_new)[significant_pre, ])
+
+medical_model_plot <- data.frame(
+  odds_rat = names(odds_ratios),
+  OddsRatio = odds_ratios,
+  Lower_CI = ci[, "2.5 %"],
+  Upper_CI = ci[, "97.5 %"]
+)
+
+# Use ggplot2 to create the plot
+library(ggplot2)
+ggplot(medical_model_plot, aes(x = odds_rat, y = OddsRatio)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.2) +
+  scale_y_log10() +  #plotting odds ratios
+  labs(y = "Odds Ratio", x = "Significant Predictors")
+```
+
+\newpage
+
+
+# Perform Likelihood Ratio Test
+```{r}
+# LRT between SG data on US model and SG model for financial delegation
+financial_result <- anova(modelFinLevel1_new, modelFinLevel2_new, test = "Chisq")
+financial_result
+
+financial_result <- anova(modelFinLevel1, modelFinLevel2, test = "Chisq")
+financial_result
+```
+
+The p-value is 4.662e-05, which is less than the significance level $\alpha = 0.05$, we have strong evidence to reject the null hypothesis that the SG dataset on US financial model fits the data well. This suggests that the new SG financial model with the additional predictors, provides a significantly better fit to the data.
+
+
+```{r}
+# LRT between SG data on US model and SG model for medical delegation
+medical_result <- anova(modelMedLevel1_new, modelMedLevel2_new, test = "Chisq")
+medical_result
+
+lmtest::lrtest(modelMedLevel1_new,modelMedLevel2_new)
+
+lmtest::lrtest(modelMedLevel1,modelMedLevel2)
+
+```
+
+The p-value is 1.901e-08, which is less than the significance level $\alpha = 0.05$, we have strong evidence to reject the null hypothesis that the SG dataset on US financial model fits the data well. This suggests that the new SG medical model with the additional predictors, provides a significantly better fit to the data.
+\newpage
+
+
+
+# New Financial Model output plots
+
+```{r}
+# unique(test.data$Housing)
+predicted_probs_finance <- predict(modelFinLevel2_new, type = "response")
+
+test.data$predicted_probs_finance <- predicted_probs_finance
+
+# Calculate predicted counts
+test.data$predicted_count_finance <- ifelse(test.data$predicted_probs_finance > 0.5, 1, 0)
+
+
+# Summarize the data to get counts for each level of 'Housing'
+housing_summary <- test.data %>%
+  group_by(Housing) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(housing_summary, id.vars = "Housing", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+plot_data$Housing <- factor(plot_data$Housing, levels = c(1, 2, 3), labels = c("low-income housing", "apartment", "familyhouse"))
+
+# Create the plot
+ggplot(plot_data, aes(x = Housing, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  scale_x_discrete(labels = c("1" = "low-income housing", "2" = "apartment", "3" = "familyhouse")) +
+  labs(x = "Housing", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Housing Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+```{r}
+library(dplyr)
+# Summarize the data to get counts for each level of 'Age'
+Age_summary <- test.data %>%
+  group_by(Age) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(Age_summary, id.vars = "Age", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+plot_data$Age <- factor(plot_data$Age, levels = c(1, 2, 3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11), labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+
+# Create the plot
+ggplot(plot_data, aes(x = Age, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "Age", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Age Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+As age increase, less percentage of financial proxy.
+
+
+
+```{r}
+# unique(test.data$Religion)
+# Summarize the data to get counts for each level of 'Religion'
+Age_summary <- test.data %>%
+  group_by(Religion) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(Age_summary, id.vars = "Religion", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = Religion, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "Religion", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Religion Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+```{r}
+# unique(test.data$HelpFriends)
+# Summarize the data to get counts for each level of 'HelpFriends'
+HelpFriends_summary <- test.data %>%
+  group_by(HelpFriends) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(HelpFriends_summary, id.vars = "HelpFriends", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = HelpFriends, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "HelpFriends", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of HelpFriends Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+number of helping friends increase, overall more percentage of Financial proxy.
+
+
+```{r}
+# unique(test.data$HelpPassAway)
+# Summarize the data to get counts for each level of 'HelpPassAway'
+HelpFriends_summary <- test.data %>%
+  group_by(HelpPassAway) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(HelpFriends_summary, id.vars = "HelpPassAway", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = HelpPassAway, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "HelpPassAway", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of HelpPassAway Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+
+```{r}
+# unique(test.data$FinanceHelpImmediateFam)
+# Summarize the data to get counts for each level of 'FinanceHelpImmediateFam'
+HelpFriends_summary <- test.data %>%
+  group_by(FinanceHelpImmediateFam) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(HelpFriends_summary, id.vars = "FinanceHelpImmediateFam", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = FinanceHelpImmediateFam, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "FinanceHelpImmediateFam", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of FinanceHelpImmediateFam Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+```{r}
+# unique(test.data$FinanceHelpPassAway)
+# Summarize the data to get counts for each level of 'FinanceHelpPassAway'
+HelpFriends_summary <- test.data %>%
+  group_by(FinanceHelpPassAway) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(HelpFriends_summary, id.vars = "FinanceHelpPassAway", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = FinanceHelpPassAway, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "FinanceHelpPassAway", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of FinanceHelpPassAway Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+```{r}
+# unique(test.data$FinanceLPA)
+# Summarize the data to get counts for each level of 'FinanceLPA'
+HelpFriends_summary <- test.data %>%
+  group_by(FinanceLPA) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(HelpFriends_summary, id.vars = "FinanceLPA", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+plot_data$FinanceLPA <- factor(plot_data$FinanceLPA, levels = c(0, 1), labels = c("No","Yes"))
+
+# Create the plot
+ggplot(plot_data, aes(x = FinanceLPA, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "FinanceLPA", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of FinanceLPA Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+```{r}
+# unique(test.data$financial_tasks)
+# Summarize the data to get counts for each level of 'financial_tasks'
+HelpFriends_summary <- test.data %>%
+  group_by(financial_tasks) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(HelpFriends_summary, id.vars = "financial_tasks", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = financial_tasks, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "financial_tasks", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of financial_tasks Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+More frequently in helping finanancial tasks, higher percentage of financial proxy.
+
+
+
+```{r}
+# unique(test.data$IADL)
+# Summarize the data to get counts for each level of 'IADL'
+HelpFriends_summary <- test.data %>%
+  group_by(IADL) %>%
+  summarise(Proxy_Count = sum(predicted_count_finance),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(HelpFriends_summary, id.vars = "IADL", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = IADL, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "IADL", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of IADL Among Financial Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+
+\newpage
+
+# New Medical Model output plots
+
+```{r}
+# unique(test.data$Housing)
+predicted_probs <- predict(modelMedLevel2_new, type = "response")
+
+test.data$predicted_probs <- predicted_probs
+
+# Calculate predicted counts
+test.data$predicted_count <- ifelse(test.data$predicted_probs > 0.5, 1, 0)
+
+
+# Summarize the data to get counts for each level of 'Housing'
+housing_summary <- test.data %>%
+  group_by(Housing) %>%
+  summarise(Proxy_Count = sum(predicted_count),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(housing_summary, id.vars = "Housing", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+plot_data$Housing <- factor(plot_data$Housing, levels = c(1, 2, 3), labels = c("low-income housing", "apartment", "familyhouse"))
+
+# Create the plot
+ggplot(plot_data, aes(x = Housing, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  scale_x_discrete(labels = c("1" = "low-income housing", "2" = "apartment", "3" = "familyhouse")) +
+  labs(x = "Housing", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Housing Among Medical Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+```{r}
+library(dplyr)
+# Summarize the data to get counts for each level of 'Age'
+Age_summary <- test.data %>%
+  group_by(Age) %>%
+  summarise(Proxy_Count = sum(predicted_count),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(Age_summary, id.vars = "Age", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+plot_data$Age <- factor(plot_data$Age, levels = c(1, 2, 3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11), labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+
+# Create the plot
+ggplot(plot_data, aes(x = Age, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "Age", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Age Among Medical Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+As age increase, less percentage of proxy.
+
+
+```{r}
+
+# Summarize the data to get counts for each level of 'Ethnicity'
+housing_summary <- test.data %>%
+  group_by(Ethnicity) %>%
+  summarise(Proxy_Count = sum(predicted_count),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(housing_summary, id.vars = "Ethnicity", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+
+# Create the plot
+ggplot(plot_data, aes(x = Ethnicity, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position ="stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "Ethnicity", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Ethnicity Among Medical Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+```{r}
+# Summarize the data to get counts for each level of 'lowstakeMed'
+housing_summary <- test.data %>%
+  group_by(lowstakeMed) %>%
+  summarise(Proxy_Count = sum(predicted_count),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(housing_summary, id.vars = "lowstakeMed", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = lowstakeMed, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "lowstakeMed", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Age Among Medical Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+
+Help others more frequently, higher percentage distribution to proxy compared with non-proxy.
+
+```{r}
+# test.data$highstakeMed
+# Summarize the data to get counts for each level of 'highstakeMed'
+housing_summary <- test.data %>%
+  group_by(highstakeMed) %>%
+  summarise(Proxy_Count = sum(predicted_count),
+            Total_Count = n()) %>%
+  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
+         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+
+# long format
+plot_data <- reshape2::melt(housing_summary, id.vars = "highstakeMed", 
+                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+
+# Create the plot
+ggplot(plot_data, aes(x = highstakeMed, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "yellow")) +
+  geom_text(aes(label = round(value, 2)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(x = "highstakeMed", y = "Percentage Distribution Across Proxy Type",
+       title = "Distribution in the Number of Age Among Medical Digital Proxies and Non-Proxies",
+       fill = "Proxy Type") +
+  theme_minimal()
+```
+
+Helping more with highstakeMed, higher percentage distribution of proxy.
+
+
+
+
+
+
+
+
+
+   
