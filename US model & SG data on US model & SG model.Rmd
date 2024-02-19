@@ -69,6 +69,22 @@ my.dat$Ethnicity <- as.numeric(my.dat$Ethnicity) ###
 # table(test.data.us$Ethnicity)
 # table(test.data.sg$Ethnicity)
 
+# religion
+filterCountryData <- function(xyz) { # create a function with the name my_function
+  test<-my.dat%>%
+    filter(Country==xyz)%>%
+  return(test)
+}
+#digital_proxyUS <- filterCountryData("US")
+#unique(digital_proxyUS$Religion)
+#digital_proxySG <- filterCountryData("SG")
+#unique(digital_proxySG$Religion)
+
+my.dat$Religion <- factor(my.dat$Religion, 
+                           levels = c("Christian", "No Religion", "Catholic", "Jehovah Witness", "Muslim", "Mormon", "Spiritualist", "Pagan", "Jewish", "Hindu", "Buddhist", "Agnostic","Buddhism","Catholicism","No Religion","Islam","Christianity","Taoism","Hinduism"),
+                           labels = c("Christian", "No Religion", "Catholic", "Jehovah Witness", "Muslim", "Mormon", "Spiritualist", "Pagan", "Jewish", "Hindu", "Buddhist", "Agnostic","Buddhism","Catholicism","No Religion","Islam","Christianity","Taoism","Hinduism"))
+my.dat$Religion <- as.factor(as.character(my.dat$Religion))
+
 my.dat$Education <- factor(my.dat$Education, 
                            levels = c("Below", "High", "Degree and above"),
                            labels = c("< High School", "High School", "Degree and above"), ordered = TRUE)
@@ -623,6 +639,7 @@ confint(modelFinLevel1_new,level = 0.95)
 confint.default(modelFinLevel1_new)
 ```
 
+\newpage
 
 # US financial model
 
@@ -736,6 +753,7 @@ confint(modelMedLevel1_new,level = 0.95)
 confint.default(modelMedLevel1_new)
 ```
 
+\newpage
 
 # US Medical model
 
@@ -756,6 +774,7 @@ Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value 
 
 McFadden pseudo - $R^2$ to measure how well the model fits:
 $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-644.73/870.94=0.26$
+
 
 
 ```{r}
@@ -808,7 +827,7 @@ sg_filtered_data <- subset(sg_filtered_data, !(FinanceJointAccount=="Exclude"))
 sg_filtered_data <- subset(sg_filtered_data, !(Marital=="3"))
 
 # Create test dataframe with only demographic predictors
-test.data.sg = sg_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity',
+test.data.sg = sg_filtered_data[,c('Age','Income','Housing','Gender','Education','Religion','Employment','Ethnicity',
                             'Siblings','Marital')]
 
 #how much help participants have provided for an adult in carrying out their instrumental activities of daily living
@@ -975,6 +994,27 @@ McFadden pseudo - $R^2$ to measure how well the model fits:
 $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-305.92/413.82=0.26$
 
 
+# SG financial model with Religion
+
+Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
+| --- | --- | --- | --- | --- | --- | --- | 
+|(Intercept) | $\hat{\beta}_0$ | -3.28 | 1.10 | -2.99 | [-5.50,-1.18] | 0.003 ** | 
+| Age | $\hat{\beta}_1$ | -0.20 | 0.06 | -3.50 | [-0.32,-0.09] | 0.0005 *** | 
+| Education | $\hat{\beta}_2$ | 0.86 | 0.34 | 2.56 | [0.21,1.54] | 0.01 * | 
+| Religion: Catholicism | $\hat{\beta}_3$ | 1.25 | 0.77 | 1.62 | [-0.23,2.80] | 0.10 | 
+| Religion: Christianity | $\hat{\beta}_4$ | -0.51 |0.41 | -1.26 | [-1.32,0.28] | 0.21 | 
+| Religion: Hinduism | $\hat{\beta}_5$ | 0.49 | 0.76 | 0.64 | [-1.08,1.98] | 0.52 | 
+| Religion: Islam | $\hat{\beta}_6$ | 0.38 | 0.48 | 0.80 | [-0.55,1.32] | 0.43 | 
+| Religion: No Religion | $\hat{\beta}_7$ | -0.86 | 0.42 | -2.05 | [-1.70,-0.05] | 0.04 * | 
+| Religion: Taoism | $\hat{\beta}_8$ | -1.81 | 1.02 | -1.78 | [-4.04,0.07] | 0.08 . | 
+| IADL | $\hat{\beta}_9$ | 3.03 | 0.77 | 3.93 | [1.56,4.60] | 8.57e-05 *** | 
+| ADL | $\hat{\beta}_10$ | 0.86 | 0.52 | 1.65 | [-0.16,1.90] | 0.10 . | 
+
+
+McFadden pseudo - $R^2$ to measure how well the model fits:
+$pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-294.59/413.82=0.29$
+
+
 ```{r}
 # Provides min, median, mean, max, and quartiles
 summary(digital_proxySG$Age)
@@ -982,8 +1022,13 @@ summary(digital_proxySG$Age)
 sd(digital_proxySG$Age)
 
 # Percentage of each category in Education
+table(test.data.us$Education)
+table(test.data.sg$Education)
 prop.table(table(test.data.sg$Education)) * 100  
 median(test.data.sg$Income)
+
+# Percentage of each category in Religion
+prop.table(table(test.data.sg$Religion)) * 100  
 
 # Percentage of each category in Ethnicity
 prop.table(table(test.data.sg$Ethnicity)) * 100
@@ -1020,6 +1065,9 @@ sd(test.data.sg$ADL)
     - median: 0.1900
     - Interquartile Range (IQR): 1st Qu. 0.0000, 3rd Qu. 0.6700
     - standard deviation: 0.3666648
+  + Religion(categorical)
+    - Percentage: Buddhist (34.539474%), Catholicism (4.605263%), Christianity (19.407895), Hinduism (3.289474%), Islam (14.473684%), No Religion (19.736842%), Taoism (3.947368%)
+    - A total of 303 participants
 
 
 
@@ -1064,6 +1112,27 @@ Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value 
 
 McFadden pseudo - $R^2$ to measure how well the model fits:
 $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-313.24/412.49=0.24$
+
+
+# SG Medical model with Religion (same as the model without Religion)
+
+Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
+| --- | --- | --- | --- | --- | --- | --- | 
+|(Intercept) | $\hat{\beta}_0$ | -3.39 | 0.97 | -3.50 | [-5.33,-1.52] | 0.0005 *** | 
+| Age | $\hat{\beta}_1$ | -0.26 | 0.06 | -4.33 | [-0.38,-0.14] | 1.51e-05 *** | 
+| Income | $\hat{\beta}_2$ | 0.18 | 0.11 | 1.57 | [-0.04,0.40] | 0.12 | 
+| Housing | $\hat{\beta}_3$ | 0.54 | 0.34 | 1.62 | [-0.11,1.22] | 0.10 | 
+| Ethnicity: Underrepresented | $\hat{\beta}_4$ | 0.90 | 0.35 | 2.55 | [0.21,1.61] | 0.01 * | 
+| Marital: Married | $\hat{\beta}_5$ | 0.60 | 0.46 | 1.31 | [-0.32,1.50] | 0.19 | 
+| Marital: Unmarried | $\hat{\beta}_6$ | -0.18 | 0.30 | -0.58 | [-0.79,0.41] | 0.56 | 
+| IADL | $\hat{\beta}_7$ | 2.54 | 0.72 | 3.54 | [1.16,3.98] | 0.0004 *** | 
+| ADL | $\hat{\beta}_8$ | 0.85 | 0.50 | 1.69 | [-0.13,1.85] | 0.09 . | 
+
+
+McFadden pseudo - $R^2$ to measure how well the model fits:
+$pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-313.24/412.49=0.24$
+
+
 
 
 
@@ -1124,30 +1193,63 @@ print(p)
 
 ## Age
 ```{r}
-# fitted probabilities
-test.data.us$Prob_FinanceDelegate = modelFinLevel1_new$fitted.values
-test.data.sg$Prob_FinanceDelegate = modelFinLevel3_new$fitted.values
+# # Add the fitted probabilities to dataset
+# test.data.us$FittedProbabilities <- modelFinLevel1_new$fitted.values
+# test.data.sg$FittedProbabilities <- modelFinLevel3_new$fitted.values
+# 
+# # Aggregate the fitted probabilities by age
+# Fitted_sum_us <- aggregate(FittedProbabilities ~ Age, data = test.data.us, mean)
+# Fitted_sum_sg <- aggregate(FittedProbabilities ~ Age, data = test.data.sg, mean)
+# 
+# # Convert to a percentage
+# Fitted_sum_us$Proportion <- Fitted_sum_us$FittedProbabilities * 100
+# Fitted_sum_sg$Proportion <- Fitted_sum_sg$FittedProbabilities * 100
+# 
+# Fitted_sum_us$Country <- 'US'
+# Fitted_sum_sg$Country <- 'SG'
+# 
+# combined_data <- rbind(Fitted_sum_us, Fitted_sum_sg)
+# 
+# 
+# p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
+#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Financial Delegation by Age",
+#        x = "Age",
+#        y = "Percentage of Financial Delegation") +
+#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+# 
+# print(p)
+```
 
-# aggregate Age for US and SG
-age_percentage_us <- aggregate(Prob_FinanceDelegate ~ Age, data = test.data.us, mean)
-age_percentage_sg <- aggregate(Prob_FinanceDelegate ~ Age, data = test.data.sg, mean)
+```{r}
+# Calculate the total number of individuals in each age level
+# group data by the Age
+# For each group, applies the length function to the FinanceDelegate1 column, which counts the number of FinanceDelegate1 for each Age
+Age_count_us <- aggregate(FinanceDelegate1 ~ Age, data = test.data.us, length)
+sum_age_us <- sum (table(test.data.us$Age))
+Age_count_sg <- aggregate(FinanceDelegate1 ~ Age, data = test.data.sg, length)
+sum_age_sg <- sum (table(test.data.sg$Age))
 
-# convert probabilities to percentages
-age_percentage_us$Prob_FinanceDelegate <- age_percentage_us$Prob_FinanceDelegate * 100
-age_percentage_sg$Prob_FinanceDelegate <- age_percentage_sg$Prob_FinanceDelegate * 100
+# Calculate the proportion of financial delegation as a percentage
+Age_count_us$Proportion <- Age_count_us$FinanceDelegate1 / sum_age_us * 100
+Age_count_sg$Proportion <- Age_count_sg$FinanceDelegate1 / sum_age_sg * 100
 
-age_percentage_us$Country <- 'US'
-age_percentage_sg$Country <- 'SG'
-# dataframe
-combined_data <- rbind(age_percentage_us, age_percentage_sg)
-combined_data$Age <- as.numeric(as.character(combined_data$Age))
+Age_count_us$Country <- 'US'
+Age_count_sg$Country <- 'SG'
 
-library(ggplot2)
-p <- ggplot(combined_data, aes(x = Age, y = Prob_FinanceDelegate, group = Country)) +
+combined_data <- rbind(Age_count_us, Age_count_sg)
+
+p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_FinanceDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
@@ -1159,44 +1261,42 @@ p <- ggplot(combined_data, aes(x = Age, y = Prob_FinanceDelegate, group = Countr
 print(p)
 ```
 
+ordering <- c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70")
+
 This plot shows the trend of the percentage of financial delegation as age growth and how individuals' percentage to delegate financial decisions differs in the US and SG. 
 Both the green trend line (SG) and the blue trend line (US) exhibit a decrease in the likelihood of financial delegation as age grows, which shows a negative correlation between the age of participants and the percentage of medical delegation. For SG participants, the highest percentage in helping with financial delegation occurs from age 35-39 with 65.4% and the lowest percentage in helping with financial delegation occurs for age over 70 with 15.6%. For US participants, the highest percentage in helping with financial delegation occurs from age 30-34 with 51.2% and the lowest percentage in helping with financial delegation occurs from age 65-69 with 26.2%. 
 Moreover, the percentage of financial delegation is higher in SG when participants have an age lower than 45 years old, once the age exceeds 45 years old, the percentage of financial delegation is higher in the US.
 
 
 ## Education
+
 ```{r}
-# fitted probabilities
-test.data.us$Prob_FinanceDelegate = modelFinLevel1_new$fitted.values
-test.data.sg$Prob_FinanceDelegate = modelFinLevel3_new$fitted.values
+# Calculate the total number of individuals in each education level
+# group data by the Education
+# For each group, applies the length function to the FinanceDelegate1 column, which counts the number of FinanceDelegate1 for each Education group
+Education_count_us <- aggregate(FinanceDelegate1 ~ Education, data = test.data.us, length)
+sum_education_us <- sum (table(test.data.us$Education))
+Education_count_sg <- aggregate(FinanceDelegate1 ~ Education, data = test.data.sg, length)
+sum_education_sg <- sum (table(test.data.sg$Education))
 
-# aggregate Age for US and SG
-Education_percentage_us <- aggregate(Prob_FinanceDelegate ~ Education, data = test.data.us, mean)
-Education_percentage_sg <- aggregate(Prob_FinanceDelegate ~ Education, data = test.data.sg, mean)
+# Calculate the proportion of financial delegation as a percentage
+Education_count_us$Proportion <- Education_count_us$FinanceDelegate1 / sum_education_us * 100
+Education_count_sg$Proportion <- Education_count_sg$FinanceDelegate1 / sum_education_sg * 100
 
-# convert probabilities to percentages
-Education_percentage_us$Prob_FinanceDelegate <- Education_percentage_us$Prob_FinanceDelegate * 100
-Education_percentage_sg$Prob_FinanceDelegate <- Education_percentage_sg$Prob_FinanceDelegate * 100
+Education_count_us$Country <- 'US'
+Education_count_sg$Country <- 'SG'
 
-Education_percentage_us$Country <- 'US'
-Education_percentage_sg$Country <- 'SG'
-# dataframe
-Education_percentage_us$Education <- factor(Education_percentage_us$Education, 
-                                             levels = c(1, 2, 3),
-                                             labels = c("< High School", "High School", "Degree and above"))
+combined_data <- rbind(Education_count_us, Education_count_sg)
 
-Education_percentage_sg$Education <- factor(Education_percentage_sg$Education, 
-                                             levels = c(1, 2, 3),
-                                             labels = c("< High School", "High School", "Degree and above"))
+combined_data$Education <- factor(combined_data$Education, 
+                                  levels = c(1, 2, 3),
+                                  labels = c("< High School", "High School", "Degree and above"))
 
-# Combine the data frames
-combined_data <- rbind(Education_percentage_us, Education_percentage_sg)
-
-p <- ggplot(combined_data, aes(x = Education, y = Prob_FinanceDelegate, group = Country)) +
+p <- ggplot(combined_data, aes(x = Education, y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_FinanceDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
@@ -1206,36 +1306,41 @@ p <- ggplot(combined_data, aes(x = Education, y = Prob_FinanceDelegate, group = 
   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
 
 print(p)
+
+
 ```
 
-The green trend line represents the likelihood of financial delegating decisions that differ among Education levels for SG participants. The blue trend line represents the likelihood of financial delegating decisions that differ among Education levels for US participants. Both countries have an increasing trend, which means that the participant who has a higher education level (degree and above) might have a higher probability of helping with financial delegations. For education levels lower than high school, US participants have a higher percentage of helping with financial delegations about 20.6%. However, for participants who have a degree and above, SG participants have a higher percentage of helping with the financial delegation about 53.2%.
+The green trend line represents the likelihood of financial delegating decisions that differ among Education levels for SG participants. The blue trend line represents the likelihood of financial delegating decisions that differ among Education levels for US participants. Both countries have an increasing trend, which means that the participant who has a higher education level (degree and above) might have a higher probability of helping with financial delegations. For education levels lower than high school, US participants have a higher percentage of helping with financial delegations about 4.3%. However, for participants who have a degree and above, SG participants have a higher percentage of helping with the financial delegation about 58.2%.
 
 
 ## IADL
+
 ```{r}
-# fitted probabilities
-test.data.us$Prob_FinanceDelegate = modelFinLevel1_new$fitted.values
-test.data.sg$Prob_FinanceDelegate = modelFinLevel3_new$fitted.values
+# Aggregate financial delegation by IADL score
+# group the FinanceDelegate1 data by the IADL variable
+# function sums up the FinanceDelegate1 values within each IADL group.
+IADL_delegation_us <- aggregate(FinanceDelegate1 ~ IADL, data = test.data.us, FUN = function(x) { sum(x) })
+IADL_delegation_sg <- aggregate(FinanceDelegate1 ~ IADL, data = test.data.sg, FUN = function(x) { sum(x) })
 
-# aggregate Age for US and SG
-IADL_percentage_us <- aggregate(Prob_FinanceDelegate ~ IADL, data = test.data.us, mean)
-IADL_percentage_sg <- aggregate(Prob_FinanceDelegate ~ IADL, data = test.data.sg, mean)
+# Calculate the total count
+total_delegation_us <- sum(IADL_delegation_us$FinanceDelegate1)
+total_delegation_sg <- sum(IADL_delegation_sg$FinanceDelegate1)
 
-# convert probabilities to percentages
-IADL_percentage_us$Prob_FinanceDelegate <- IADL_percentage_us$Prob_FinanceDelegate * 100
-IADL_percentage_sg$Prob_FinanceDelegate <- IADL_percentage_sg$Prob_FinanceDelegate * 100
+# Calculate the proportion
+IADL_delegation_us$Proportion <- (IADL_delegation_us$FinanceDelegate1 / total_delegation_us) * 100
+IADL_delegation_sg$Proportion <- (IADL_delegation_sg$FinanceDelegate1 / total_delegation_sg) * 100
 
-IADL_percentage_us$Country <- 'US'
-IADL_percentage_sg$Country <- 'SG'
-# dataframe
-combined_data <- rbind(IADL_percentage_us, IADL_percentage_sg)
-combined_data$IADL <- as.numeric(as.character(combined_data$IADL)) 
+IADL_delegation_us$Country <- 'US'
+IADL_delegation_sg$Country <- 'SG'
 
-p <- ggplot(combined_data, aes(x = IADL, y = Prob_FinanceDelegate, group = Country)) +
+combined_data <- rbind(IADL_delegation_us, IADL_delegation_sg)
+
+
+p <- ggplot(combined_data, aes(x = as.factor(IADL), y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_FinanceDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
@@ -1247,6 +1352,7 @@ p <- ggplot(combined_data, aes(x = IADL, y = Prob_FinanceDelegate, group = Count
 print(p)
 ```
 
+
 This plot shows that based on the Instrumental Activities of Daily Living (IADL) with a range [0,1], how individuals' percentage to delegate financial decisions differ in US and SG. 
 Both the green trend line (SG) and the blue trend line (US) exhibit an increase in the likelihood of financial delegation as IADL scores increase, which shows a positive correlation between IADL scores and the percentage of medical delegation.
 Moreover, with the same IADL score, the Percentage of financial Delegation is higher in SG compared with the US.
@@ -1255,34 +1361,33 @@ Moreover, with the same IADL score, the Percentage of financial Delegation is hi
 
 ## ADL
 ```{r}
-# fitted probabilities
-test.data.us$Prob_FinanceDelegate = modelFinLevel1_new$fitted.values
-test.data.sg$Prob_FinanceDelegate = modelFinLevel3_new$fitted.values
+# Aggregate financial delegation by IADL score
+ADL_delegation_us <- aggregate(FinanceDelegate1 ~ ADL, data = test.data.us, FUN = function(x) { sum(x) })
+ADL_delegation_sg <- aggregate(FinanceDelegate1 ~ ADL, data = test.data.sg, FUN = function(x) { sum(x) })
 
-# aggregate Age for US and SG
-ADL_percentage_us <- aggregate(Prob_FinanceDelegate ~ ADL, data = test.data.us, mean)
-ADL_percentage_sg <- aggregate(Prob_FinanceDelegate ~ ADL, data = test.data.sg, mean)
+# Calculate the total count
+total_delegation_us <- sum(ADL_delegation_us$FinanceDelegate1)
+total_delegation_sg <- sum(ADL_delegation_sg$FinanceDelegate1)
 
-# convert probabilities to percentages
-ADL_percentage_us$Prob_FinanceDelegate <- ADL_percentage_us$Prob_FinanceDelegate * 100
-ADL_percentage_sg$Prob_FinanceDelegate <- ADL_percentage_sg$Prob_FinanceDelegate * 100
+# Calculate the proportion
+ADL_delegation_us$Proportion <- (ADL_delegation_us$FinanceDelegate1 / total_delegation_us) * 100
+ADL_delegation_sg$Proportion <- (ADL_delegation_sg$FinanceDelegate1 / total_delegation_sg) * 100
 
-ADL_percentage_us$Country <- 'US'
-ADL_percentage_sg$Country <- 'SG'
-# dataframe
-combined_data <- rbind(ADL_percentage_us, ADL_percentage_sg)
-combined_data$ADL <- as.numeric(as.character(combined_data$ADL)) 
+ADL_delegation_us$Country <- 'US'
+ADL_delegation_sg$Country <- 'SG'
 
-p <- ggplot(combined_data, aes(x = ADL, y = Prob_FinanceDelegate, group = Country)) +
+combined_data <- rbind(ADL_delegation_us, ADL_delegation_sg)
+
+p <- ggplot(combined_data, aes(x = as.factor(ADL), y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_FinanceDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
-  labs(title = "Financial Delegation by ADL",
-       x = "ADL",
+  labs(title = "Financial Delegation by IADL",
+       x = "IADL",
        y = "Percentage of Financial Delegation") +
   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
 
@@ -1301,40 +1406,69 @@ Moreover, with the same ADL score, the Percentage of financial Delegation is hig
 # Plots for common predictors between US and SG for Medical model
 
 ## Age
+
 ```{r}
-# fitted probabilities
-test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
-test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# # Add the fitted probabilities to your dataset
+# test.data.us$FittedProbabilities <- modelMedLevel1_new$fitted.values
+# test.data.sg$FittedProbabilities <- modelMedLevel3_new$fitted.values
+# 
+# # Aggregate the fitted probabilities by age
+# Fitted_sum_us <- aggregate(FittedProbabilities ~ Age, data = test.data.us, mean)
+# Fitted_sum_sg <- aggregate(FittedProbabilities ~ Age, data = test.data.sg, mean)
+# 
+# # Convert to a percentage
+# Fitted_sum_us$Proportion <- Fitted_sum_us$FittedProbabilities * 100
+# Fitted_sum_sg$Proportion <- Fitted_sum_sg$FittedProbabilities * 100
+# 
+# Fitted_sum_us$Country <- 'US'
+# Fitted_sum_sg$Country <- 'SG'
+# 
+# combined_data <- rbind(Age_count_us, Age_count_sg)
+# 
+# 
+# p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
+#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Financial Delegation by Age",
+#        x = "Age",
+#        y = "Percentage of Financial Delegation") +
+#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+# 
+# print(p)
+```
 
-# aggregate Age for US and SG
-age_percentage_us <- aggregate(Prob_MedicalDelegate ~ Age, data = test.data.us, mean)
-age_percentage_sg <- aggregate(Prob_MedicalDelegate ~ Age, data = test.data.sg, mean)
+```{r}
+# Calculate the total number of individuals
+Age_count_us <- aggregate(MedicalDelegate1 ~ Age, data = test.data.us, length)
+sum_age_us <- sum (table(test.data.us$Age))
+Age_count_sg <- aggregate(MedicalDelegate1 ~ Age, data = test.data.sg, length)
+sum_age_sg <- sum (table(test.data.sg$Age))
 
-# convert probabilities to percentages
-age_percentage_us$Prob_MedicalDelegate <- age_percentage_us$Prob_MedicalDelegate * 100
-age_percentage_sg$Prob_MedicalDelegate <- age_percentage_sg$Prob_MedicalDelegate * 100
+# Calculate the proportion of financial delegation as a percentage
+Age_count_us$Proportion <- Age_count_us$MedicalDelegate1 / sum_age_us * 100
+Age_count_sg$Proportion <- Age_count_sg$MedicalDelegate1 / sum_age_sg * 100
 
-age_percentage_us$Country <- 'US'
-age_percentage_sg$Country <- 'SG'
-# dataframe
-# age_percentage_us$Age <- factor(age_percentage_us$Age, levels = c(1,2,3,4,5,6,7,8,9,10,11),labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+Age_count_us$Country <- 'US'
+Age_count_sg$Country <- 'SG'
 
-# age_percentage_sg$Age <- factor(age_percentage_sg$Age,levels = c(1,2,3,4,5,6,7,8,9,10,11),labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+combined_data <- rbind(Age_count_us, Age_count_sg)
 
-combined_data <- rbind(age_percentage_us, age_percentage_sg)
-combined_data$Age <- as.numeric(as.character(combined_data$Age))
-
-p <- ggplot(combined_data, aes(x = Age, y = Prob_MedicalDelegate, group = Country)) +
+p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
-  labs(title = "Medical Delegation by Age",
+  labs(title = "Financial Delegation by Age",
        x = "Age",
-       y = "Percentage of Medical Delegation") +
+       y = "Percentage of Financial Delegation") +
   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
 
 print(p)
@@ -1390,6 +1524,48 @@ p <- ggplot(combined_data, aes(x = Ethnicity, y = Prob_MedicalDelegate, group = 
 
 print(p)
 ```
+
+```{r}
+# Calculate the total number of individuals
+Age_count_us <- aggregate(MedicalDelegate1 ~ Ethnicity, data = test.data.us, length)
+sum_age_us <- sum (table(test.data.us$Ethnicity))
+Age_count_sg <- aggregate(MedicalDelegate1 ~ Ethnicity, data = test.data.sg, length)
+sum_age_sg <- sum (table(test.data.sg$Ethnicity))
+
+# Calculate the proportion of financial delegation as a percentage
+Age_count_us$Proportion <- Age_count_us$MedicalDelegate1 / sum_age_us * 100
+Age_count_sg$Proportion <- Age_count_sg$MedicalDelegate1 / sum_age_sg * 100
+
+Age_count_us$Country <- 'US'
+Age_count_sg$Country <- 'SG'
+
+# dataframe
+Age_count_us$Ethnicity <- factor(Age_count_us$Ethnicity, 
+                                             levels = c(1, 2),
+                                             labels = c("Majority", "Underrepresented"))
+
+Age_count_sg$Ethnicity <- factor(Age_count_sg$Ethnicity, 
+                                             levels = c(1, 2),
+                                             labels = c("Majority", "Underrepresented"))
+
+combined_data <- rbind(Age_count_us, Age_count_sg)
+
+p <- ggplot(combined_data, aes(x = Ethnicity, y = Proportion, group = Country)) +
+  geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+  geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Ethnicity",
+       x = "Ethnicity",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+
+print(p)
+```
+
 
 
 The green trend line represents the likelihood of medical delegating decisions that differ in Ethnicity between the Majority ("Chinese") and Underrepresented ("Malay", "Indian", "Eurasian") for SG participants. It has an increasing trend, which shows that SG participants who have Underrepresented Ethnicity ("Malay", "Indian", "Eurasian") might have a higher percentage of delegating in making medical decisions compared with SG participants whose Ethnicity is "Chinese". 
@@ -1777,6 +1953,197 @@ This plot focuses on the significant predictor "Ethnicity" in the SG financial m
 
 
 
+```{r}
+filtered.dat <- my.dat
 
+filtered.dat <- subset(filtered.dat, !(HelpFriends=="101"))
+filtered.dat <- subset(filtered.dat, !(FinanceHelpFriends=="101"))
+filtered.dat <- subset(filtered.dat, !(MedicalHelpImmediateFam=="101"))
+filtered.dat <- subset(filtered.dat, !(MedicalHelpFriends=="101"))
+
+filtered.dat <- subset(filtered.dat, !(HelpFriends=="31"))
+filtered.dat <- subset(filtered.dat, !(FinanceHelpFriends=="31"))
+filtered.dat <- subset(filtered.dat, !(MedicalHelpImmediateFam=="31"))
+filtered.dat <- subset(filtered.dat, !(MedicalHelpFriends=="31"))
+filtered.dat <- subset(filtered.dat, !(FinanceJointAccount=="Exclude"))
+filtered.dat <- subset(filtered.dat, !(Marital=="3"))
+
+# Create test dataframe with only demographic predictors
+test.data = filtered.dat[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity',
+                            'Siblings','Marital')]
+
+#how much help participants have provided for an adult in carrying out their instrumental activities of daily living
+test.data$IADL = rowSums(filtered.dat[ , c("HelpTransport","HelpMed","HelpFinance","HelpFood","HelpLaundry","HelpHousekeep")])
+test.data$IADL <- scale_values(test.data$IADL)
+test.data$IADL <- round(test.data$IADL ,digit=2)
+
+#how much help participants have provided for an adult in carrying out their activities of daily living
+test.data$ADL = rowSums(filtered.dat[ , c("ADLBath","ADLFeed","ADLGroom","ADLIncontinence","ADLToilet","ADLTransfer")]) 
+test.data$ADL <- scale_values(test.data$ADL)
+test.data$ADL <- round(test.data$ADL ,digit=2)
+
+#how much help participants have provided for an adult in carrying out low-stake medical care activities
+test.data$lowstakeMed = rowSums(filtered.dat[ , c("MedicalMakeAppt","MedicalAccompanyAppt","MedicalTakeMeds","MedicalSeeTreatment")])
+
+#how much help participants have provided for an adult in carrying out high-stake medical care activities
+test.data$highstakeMed = rowSums(filtered.dat[ , c("MedicalDecisionPerson","MedicalDecisionDoctor","MedicalSignPapers","MedicalWorthPerson",
+                                                   "MedicalWorthDoctor","MedicalWorthFamily","MedicalEndPerson","MedicalEndFamily",
+                                                   "MedicalFlexibilityPerson","MedicalFlexibilityDoctor","MedicalFlexibilityFamily",
+                                                   "MedicalDoctorQuestions")])
+
+#DEPENDENT VARIABLES HERE
+test.data$FinanceDelegate1 = as.factor(filtered.dat$FinanceDelegate1)
+test.data$FinanceDelegate2 = as.factor(filtered.dat$FinanceDelegate2)
+test.data$MedicalDelegate1 = as.factor(filtered.dat$MedicalDelegate1)
+test.data$MedicalDelegate2 = as.factor(filtered.dat$MedicalDelegate2)
+
+#Assist vs. No
+test.data$FinanceDelegate1 = factor(test.data$FinanceDelegate1,
+                                    levels = c("Assist","No"),
+                                    labels = c("1","0"))
+test.data$FinanceDelegate1 <- as.numeric(as.character(test.data$FinanceDelegate1))
+
+#Assist vs. No
+test.data$MedicalDelegate1 = factor(test.data$MedicalDelegate1,
+                                    levels = c("Assist","No"),
+                                    labels = c("1","0"))
+test.data$MedicalDelegate1 <- as.numeric(as.character(test.data$MedicalDelegate1))
+```
+
+
+```{r}
+# Create a new variable that is 1 if the individual is a delegate for both duties, and 0 otherwise
+test.data.sg$BothDelegations <- with(test.data.sg, as.integer(MedicalDelegate1 == 1 & FinanceDelegate1 == 1))
+
+# Calculate the total number of individuals who are delegates for both duties
+both_delegations_count <- sum(test.data.sg$BothDelegations)
+
+# Calculate the total number of proxies
+total_proxies <- nrow(test.data.sg)
+
+# Calculate the percentage
+percentage_both_delegations <- (both_delegations_count / total_proxies) * 100
+
+# Print the percentage
+print(percentage_both_delegations)
+```
+
+
+```{r}
+both_delegations_count<-sum(as.integer(test.data.sg$MedicalDelegate1 == 1 & test.data.sg$FinanceDelegate1 == 1))
+total_proxies <- nrow(test.data.sg)
+percentage_both_delegations <- (both_delegations_count / total_proxies) * 100
+print(percentage_both_delegations)
+```
+
+```{r}
+# for participants who do both medical and financial delegates
+library(dplyr)
+sg_both <- test.data.sg %>%
+  filter(MedicalDelegate1 == 1 & FinanceDelegate1 == 1)
+sg_both_sum <- sum(as.integer(sg_both$MedicalDelegate1 == 1 & sg_both$FinanceDelegate1 == 1))
+# sum(sg_both$MedicalDelegate1 == 1)
+formal_both<-sum(as.integer(sg_both$FinanceDelegate2 == "Assist-formal" & sg_both$MedicalDelegate2 == "Assist-formal"))
+informal_both<-sum(as.integer(sg_both$FinanceDelegate2 == "Assist-Informal" & sg_both$MedicalDelegate2 == "Assist-informal"))
+percentage_formal_both<-(formal_both / sg_both_sum) * 100
+print(percentage_formal_both)
+percentage_informal_both<-(informal_both / sg_both_sum) * 100
+print(percentage_informal_both)
+
+
+
+# for participants who only do medical delegates
+sg_not_both <- test.data.sg %>%
+  filter(MedicalDelegate1 == 0 | FinanceDelegate1 == 0)
+
+medical_assit<-sum(sg_not_both$MedicalDelegate1 == 1)
+formal_medical<-sum(sg_not_both$MedicalDelegate2 == "Assist-formal")
+informal_medical<-sum(sg_not_both$MedicalDelegate2 == "Assist-informal")
+percentage_formal<-(formal_medical/medical_assit) * 100
+print(percentage_formal)
+percentage_informal<-(informal_medical/medical_assit) * 100
+print(percentage_informal)
+
+
+# for participants who only do fiancial delegates
+
+finance_assit<-sum(sg_not_both$FinanceDelegate1 == 1)
+formal_finance<-sum(sg_not_both$FinanceDelegate2 == "Assist-formal")
+informal_finance<-sum(sg_not_both$FinanceDelegate2 == "Assist-Informal")
+percentage_formal<-(formal_finance/finance_assit) * 100
+print(percentage_formal)
+percentage_informal<-(informal_finance/finance_assit) * 100
+print(percentage_informal)
+
+```
+
+
+
+```{r}
+# digital_proxySG
+# Provides min, median, mean, max, and quartiles
+
+sg_not_both$Age <- factor(sg_not_both$Age, 
+                         levels = c("1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11"),
+                         labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"), ordered = TRUE)
+sg_not_both$Age <- as.factor(as.character(sg_not_both$Age))
+# sg_not_both$Age <- as.numeric(sg_not_both$Age) ###
+# ordering <- c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70")
+# orderFactor <- factor(my.dat$Age, levels = ordering)
+# my.dat$Age <- as.numeric(orderFactor)
+prop.table(table(sg_not_both$Age)) * 100
+summary(sg_not_both$Age)
+
+# Percentage of each category in Education
+table(sg_not_both$Education)
+prop.table(table(sg_not_both$Education)) * 100  
+
+# Percentage of each category in Religion
+prop.table(table(sg_not_both$Religion)) * 100  
+
+# Percentage of each category in Ethnicity
+prop.table(table(sg_not_both$Ethnicity)) * 100
+prop.table(table(digital_proxySG$Ethnicity)) * 100 
+
+# summary of IADL
+summary(sg_not_both$IADL)
+sd(sg_not_both$IADL)
+
+# summary of ADL
+summary(sg_not_both$ADL)
+sd(sg_not_both$ADL)
+```
+
+* Descriptive statistics for participants who only do medical delegates or financial delegates (significant predictors in SG model):
+  + Age (categorical)
+    - 21-24 (9.523810%), 25-29 (7.142857%), 30-34 (6.666667%), 35-39 (8.571429%), 40-44 (7.142857%), 45-49 (10.952381%), 50-54 (10.476190%), 55-59 (19.523810%), 60-64 (15.238095%), 65-69 (3.333333%), 70 and above (1.428571%%)
+    - N = 210
+    
+  + Education (ordinal)
+    - Percentage: < High School (3.333333%), High School (44.761905%), Degree and above (51.904762%)
+    - N = 210
+    
+  + Ethnicity (categorical) 
+    - Percentage: Majority (81.90476%), Underrepresented (18.09524%)
+    - N = 210
+    - Percentage (Original Dataset): Chinese (78.4565916%), Eurasian (1.9292605%), Indian (4.8231511%), Malay (12.2186495%), Mixed (0.6430868%), Others (1.9292605%)
+    - N = 311
+    
+  + IADL (numerical)
+    - mean: 0.4171
+    - median: 0.4200
+    - Interquartile Range (IQR): 1st Qu. 0.1700, 3rd Qu. 0.6700
+    - standard deviation: 0.2887436
+    
+  + ADL (numerical)
+    - mean: 0.2302
+    - median: 0.0000
+    - Interquartile Range (IQR): 1st Qu. 0.0000, 3rd Qu. 0.4200
+    - standard deviation: 0.3263008
+    
+  + Religion(categorical)
+    - Percentage: Buddhist (33.333333%), Catholicism (3.333333%), Christianity (20.952381%), Hinduism (3.333333%), Islam (12.380952%), No Religion (21.904762%), Taoism (4.761905%)
+    - N = 210
+    - A total of 210 participants
 
 
