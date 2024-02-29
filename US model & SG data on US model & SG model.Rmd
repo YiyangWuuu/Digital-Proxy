@@ -910,7 +910,7 @@ Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value 
 | Gender: Male | $\hat{\beta}_2$ | 0.24 | 0.28 | 0.85 | [-0.32,0.80] | 0.40 | 
 | Education | $\hat{\beta}_3$ | 0.21 | 0.32 | 0.67 | [-0.41,0.83] | 0.51 | 
 | Employment: Unemployed | $\hat{\beta}_4$ | -0.30 | 0.44 | -0.68 | [-1.19,0.54] | 0.50 | 
-| Ethnicity: Underrepresented | $\hat{\beta}_5$ | 0.79 | 0.36 | 2.21 | [0.1,1.50] | 0.03 * | 
+| Ethnicity: Underrepresented | $\hat{\beta}_5$ | -0.79 | 0.36 | 2.21 | [0.1,1.50] | 0.03 * | 
 | Siblings | $\hat{\beta}_6$ | 0.057 | 0.12 | 0.47 | [-0.18,0.30] | 0.64 | 
 | Marital: Married | $\hat{\beta}_7$ | 0.53 | 0.467 | 1.14 | [-0.40,1.44] | 0.25 | 
 | Marital: Unmarried | $\hat{\beta}_8$ | -0.34 | 0.29 | -1.18 | [-0.93,0.22] | 0.24 | 
@@ -964,7 +964,7 @@ test.data.sg$FinanceDelegate1 <- as.numeric(as.character(test.data.sg$FinanceDel
 
 modelFinLevel3 <- glm(FinanceDelegate1 ~ . - lowstakeMed - highstakeMed
                       - MedicalDelegate1 - MedicalDelegate2
-                      - FinanceDelegate2, data=test.data.sg, family = "binomial")
+                      - FinanceDelegate2 - Religion, data=test.data.sg, family = "binomial")
 
 summary(modelFinLevel3)
 modelFinLevel3_new <- stepAIC(modelFinLevel3)
@@ -1072,6 +1072,7 @@ sd(test.data.sg$ADL)
 
 
 ```{r}
+
 #########-----------_medicalDigitalDelegation START HERE-----------------
 #Assist vs. No
 test.data.sg$MedicalDelegate1 = factor(test.data.sg$MedicalDelegate1,
@@ -1163,30 +1164,30 @@ prop.table(table(test.data.sg$Marital)) * 100
 
 
 ```{r}
-prop.table(table(test.data.us$Age)) * 100 
-prop.table(table(test.data.sg$Age)) * 100 
-
-df <- data.frame(
-  Age = rep(c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"), each = 2),
-  Percentage = c(8.523592, 10.1973684, 7.153729, 9.5394737, 11.719939, 11.8421053, 9.589041, 10.1973684, 9.436834, 8.2236842, 9.893455, 10.8552632, 8.523592, 8.2236842, 7.458143, 14.8026316, 8.523592, 11.8421053, 9.589041, 3.2894737, 9.589041, 0.9868421), 
-  Country = rep(c("US", "SG"), 11)
-)
-
-library(ggplot2)
-
-# Plot
-p <- ggplot(df, aes(x = as.numeric(Age), y = Percentage, color = Country)) +
-  geom_bar(aes(fill = Country), stat = "identity", position = position_dodge()) +
-  geom_smooth(method = "lm", se = FALSE, position = position_dodge(width = 0.2)) + # trend lines
-  scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
-  scale_color_manual(values = c("US" = "blue", "SG" = "green")) +  # colors for trend lines
-  geom_text(aes(label = sprintf("%.2f", Percentage), group = Country), vjust = -0.5, position = position_dodge(0.9)) +
-  theme_minimal() +
-  labs(title = "Percentage Distribution Across Country",
-       x = "Age Level",
-       y = "Percentage (%)")
-# Print the plot
-print(p)
+# prop.table(table(test.data.us$Age)) * 100 
+# prop.table(table(test.data.sg$Age)) * 100 
+# 
+# df <- data.frame(
+#   Age = rep(c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"), each = 2),
+#   Percentage = c(8.523592, 10.1973684, 7.153729, 9.5394737, 11.719939, 11.8421053, 9.589041, 10.1973684, 9.436834, 8.2236842, 9.893455, 10.8552632, 8.523592, 8.2236842, 7.458143, 14.8026316, 8.523592, 11.8421053, 9.589041, 3.2894737, 9.589041, 0.9868421), 
+#   Country = rep(c("US", "SG"), 11)
+# )
+# 
+# library(ggplot2)
+# 
+# # Plot
+# p <- ggplot(df, aes(x = as.numeric(Age), y = Percentage, color = Country)) +
+#   geom_bar(aes(fill = Country), stat = "identity", position = position_dodge()) +
+#   geom_smooth(method = "lm", se = FALSE, position = position_dodge(width = 0.2)) + # trend lines
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   scale_color_manual(values = c("US" = "blue", "SG" = "green")) +  # colors for trend lines
+#   geom_text(aes(label = sprintf("%.2f", Percentage), group = Country), vjust = -0.5, position = position_dodge(0.9)) +
+#   theme_minimal() +
+#   labs(title = "Percentage Distribution Across Country",
+#        x = "Age Level",
+#        y = "Percentage (%)")
+# # Print the plot
+# print(p)
 ```
 
 # Plots for common predictors between US and SG for Financial model
@@ -1243,6 +1244,16 @@ Age_count_sg$Proportion <- Age_count_sg$FinanceDelegate1 / sum_age_sg * 100
 Age_count_us$Country <- 'US'
 Age_count_sg$Country <- 'SG'
 
+# dataframe
+Age_count_us$Age <- factor(Age_count_us$Age,
+                           levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+Age_count_sg$Age <- factor(Age_count_sg$Age,
+                           levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+
 combined_data <- rbind(Age_count_us, Age_count_sg)
 
 p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
@@ -1261,11 +1272,13 @@ p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
 print(p)
 ```
 
+num_us<-657
+num_us<-304
 ordering <- c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70")
 
 This plot shows the trend of the percentage of financial delegation as age growth and how individuals' percentage to delegate financial decisions differs in the US and SG. 
-Both the green trend line (SG) and the blue trend line (US) exhibit a decrease in the likelihood of financial delegation as age grows, which shows a negative correlation between the age of participants and the percentage of medical delegation. For SG participants, the highest percentage in helping with financial delegation occurs from age 35-39 with 65.4% and the lowest percentage in helping with financial delegation occurs for age over 70 with 15.6%. For US participants, the highest percentage in helping with financial delegation occurs from age 30-34 with 51.2% and the lowest percentage in helping with financial delegation occurs from age 65-69 with 26.2%. 
-Moreover, the percentage of financial delegation is higher in SG when participants have an age lower than 45 years old, once the age exceeds 45 years old, the percentage of financial delegation is higher in the US.
+The green trend line (SG) exhibits an obvious decrease in the likelihood of financial delegation as age grows, which shows a negative correlation between the age of participants and the percentage of medical delegation. For SG participants, the highest percentage in helping with financial delegation occurs from age 55-59 with 14.8% and the lowest percentage in helping with financial delegation occurs for age over 70 with 1.0%. However, the blue trend line (US) the percentage of financial delegation is substantially constant as age grows. For US participants, the highest percentage in helping with financial delegation occurs from age 30-34 with 11.7% and the lowest percentage in helping with financial delegation occurs from age 25-29 with 7.2%. 
+Moreover, the general percentage of financial delegation is higher in SG when participants have an age lower than 45 years old, once the age exceeds 45 years old, the general percentage of financial delegation is higher in the US.
 
 
 ## Education
@@ -1355,7 +1368,7 @@ print(p)
 
 This plot shows that based on the Instrumental Activities of Daily Living (IADL) with a range [0,1], how individuals' percentage to delegate financial decisions differ in US and SG. 
 Both the green trend line (SG) and the blue trend line (US) exhibit an increase in the likelihood of financial delegation as IADL scores increase, which shows a positive correlation between IADL scores and the percentage of medical delegation.
-Moreover, with the same IADL score, the Percentage of financial Delegation is higher in SG compared with the US.
+Moreover, when IADL score is less than 0.5, the Percentage of financial Delegation is higher in SG compared with the US. When IADL score is larger than 0.5, the Percentage of financial Delegation is higher in US compared with the SG.
 
 
 
@@ -1386,8 +1399,8 @@ p <- ggplot(combined_data, aes(x = as.factor(ADL), y = Proportion, group = Count
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
-  labs(title = "Financial Delegation by IADL",
-       x = "IADL",
+  labs(title = "Financial Delegation by ADL",
+       x = "ADL",
        y = "Percentage of Financial Delegation") +
   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
 
@@ -1396,8 +1409,8 @@ print(p)
 
 
 This plot shows that based on the Activities of Daily Living (ADL) with a range [0,1], how is individuals percentage to delegate financial decisions differ in US and SG. 
-Both the green trend line (SG) and the blue trend line (US) exhibit an increase in the likelihood of financial delegation as ADL scores increase, which shows a positive correlation between ADL scores and the percentage of financial delegation.
-Moreover, with the same ADL score, the Percentage of financial Delegation is higher in SG compared with US. 
+The blue trend line (US) exhibit an increase in the likelihood of financial delegation as ADL scores increase, which shows a positive correlation between ADL scores and the percentage of financial delegation in US. The green line (SG) has a flat trend, which shows that the ADL score might be insignificant when considering the likelihood of financial delegation in SG.
+Moreover, when ADL score is less than 0.5, the Percentage of financial Delegation is higher in SG compared with the US. When ADL score is larger than 0.5, the Percentage of financial Delegation is higher in US compared with the SG.
 
 
 
@@ -1456,6 +1469,15 @@ Age_count_sg$Proportion <- Age_count_sg$MedicalDelegate1 / sum_age_sg * 100
 Age_count_us$Country <- 'US'
 Age_count_sg$Country <- 'SG'
 
+# dataframe
+Age_count_us$Age <- factor(Age_count_us$Age,
+                           levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+Age_count_sg$Age <- factor(Age_count_sg$Age,
+                           levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
 combined_data <- rbind(Age_count_us, Age_count_sg)
 
 p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
@@ -1466,54 +1488,96 @@ p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
-  labs(title = "Financial Delegation by Age",
+  labs(title = "Medical Delegation by Age",
        x = "Age",
-       y = "Percentage of Financial Delegation") +
+       y = "Percentage of Medical Delegation") +
   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
 
 print(p)
 ```
 
-This plot shows the trend of the percentage of medical delegation as age grows and how individuals' percentage to delegate medical decisions differs in the US and SG. 
-Both the green trend line (SG) and the blue trend line (US) exhibit a decrease in the likelihood of medical delegation as age grows, which shows a negative correlation between the age of participants and the percentage of medical delegation. For SG participants, the highest percentage in helping with medical delegation occurs from age 35-39 with 64.3% and the lowest percentage in helping with medical delegation occurs for age over 70 with 12.7%. For US participants, the highest percentage in helping with medical delegation occurs from age 30-34 with 51.4% and the lowest percentage in helping with medical delegation occurs from age 65-69 with 20.3%. 
-Moreover, the percentage of medical delegation is higher in SG when participants have an age lower than 49 years old, once the age exceeds 49 years old, the percentage of medical delegation is higher in the US.
+This plot shows the trend of the percentage of medical delegation as age growth and how individuals' percentage to delegate medical decisions differs in the US and SG. 
+The green trend line (SG) exhibits an obvious decrease in the likelihood of medical delegation as age grows, which shows a negative correlation between the age of participants and the percentage of medical delegation. For SG participants, the highest percentage in helping with medical delegation occurs from age 55-59 with 14.8% and the lowest percentage in helping with medical delegation occurs for age over 70 with 1.0%. However, the blue trend line (US) the percentage of medical delegation is substantially constant as age grows. For US participants, the highest percentage in helping with medical delegation occurs from age 30-34 with 11.7% and the lowest percentage in helping with medical delegation occurs from age 25-29 with 7.2%. 
+Moreover, the general percentage of medical delegation is higher in SG when participants have an age lower than 45 years old, once the age exceeds 45 years old, the general percentage of medical delegation is higher in the US.
+
 
 
 
 
 ## Ethnicity
 ```{r}
-# fitted probabilities
-test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
-test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# # fitted probabilities
+# test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
+# test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# 
+# # aggregate Ethnicity for US and SG
+# Ethnicity_percentage_us <- aggregate(Prob_MedicalDelegate ~ Ethnicity, data = test.data.us, mean)
+# Ethnicity_percentage_sg <- aggregate(Prob_MedicalDelegate ~ Ethnicity, data = test.data.sg, mean)
+# 
+# # convert probabilities to percentages
+# Ethnicity_percentage_us$Prob_MedicalDelegate <- Ethnicity_percentage_us$Prob_MedicalDelegate * 100
+# Ethnicity_percentage_sg$Prob_MedicalDelegate <- Ethnicity_percentage_sg$Prob_MedicalDelegate * 100
+# 
+# Ethnicity_percentage_us$Country <- 'US'
+# Ethnicity_percentage_sg$Country <- 'SG'
+# # dataframe
+# Ethnicity_percentage_us$Ethnicity <- factor(Ethnicity_percentage_us$Ethnicity, 
+#                                              levels = c(1, 2),
+#                                              labels = c("Majority", "Underrepresented"))
+# 
+# Ethnicity_percentage_sg$Ethnicity <- factor(Ethnicity_percentage_sg$Ethnicity, 
+#                                              levels = c(1, 2),
+#                                              labels = c("Majority", "Underrepresented"))
+# 
+# # Combine the data frames
+# combined_data <- rbind(Ethnicity_percentage_us, Ethnicity_percentage_sg)
+# 
+# p <- ggplot(combined_data, aes(x = Ethnicity, y = Prob_MedicalDelegate, group = Country)) +
+#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Medical Delegation by Ethnicity",
+#        x = "Ethnicity",
+#        y = "Percentage of Medical Delegation") +
+#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+# 
+# print(p)
+```
 
-# aggregate Ethnicity for US and SG
-Ethnicity_percentage_us <- aggregate(Prob_MedicalDelegate ~ Ethnicity, data = test.data.us, mean)
-Ethnicity_percentage_sg <- aggregate(Prob_MedicalDelegate ~ Ethnicity, data = test.data.sg, mean)
+```{r}
+# Calculate the total number of individuals
+Ethnicity_count_us <- aggregate(MedicalDelegate1 ~ Ethnicity, data = test.data.us, length)
+sum_Ethnicity_us <- sum (table(test.data.us$Ethnicity))
+Ethnicity_count_sg <- aggregate(MedicalDelegate1 ~ Ethnicity, data = test.data.sg, length)
+sum_Ethnicity_sg <- sum (table(test.data.sg$Ethnicity))
 
-# convert probabilities to percentages
-Ethnicity_percentage_us$Prob_MedicalDelegate <- Ethnicity_percentage_us$Prob_MedicalDelegate * 100
-Ethnicity_percentage_sg$Prob_MedicalDelegate <- Ethnicity_percentage_sg$Prob_MedicalDelegate * 100
+# Calculate the proportion of financial delegation as a percentage
+Ethnicity_count_us$Proportion <- Ethnicity_count_us$MedicalDelegate1 / sum_Ethnicity_us * 100
+Ethnicity_count_sg$Proportion <- Ethnicity_count_sg$MedicalDelegate1 / sum_Ethnicity_sg * 100
 
-Ethnicity_percentage_us$Country <- 'US'
-Ethnicity_percentage_sg$Country <- 'SG'
+Ethnicity_count_us$Country <- 'US'
+Ethnicity_count_sg$Country <- 'SG'
+
 # dataframe
-Ethnicity_percentage_us$Ethnicity <- factor(Ethnicity_percentage_us$Ethnicity, 
+Ethnicity_count_us$Ethnicity <- factor(Ethnicity_count_us$Ethnicity, 
                                              levels = c(1, 2),
                                              labels = c("Majority", "Underrepresented"))
 
-Ethnicity_percentage_sg$Ethnicity <- factor(Ethnicity_percentage_sg$Ethnicity, 
+Ethnicity_count_sg$Ethnicity <- factor(Ethnicity_count_sg$Ethnicity, 
                                              levels = c(1, 2),
                                              labels = c("Majority", "Underrepresented"))
 
-# Combine the data frames
-combined_data <- rbind(Ethnicity_percentage_us, Ethnicity_percentage_sg)
+combined_data <- rbind(Ethnicity_count_us, Ethnicity_count_sg)
 
-p <- ggplot(combined_data, aes(x = Ethnicity, y = Prob_MedicalDelegate, group = Country)) +
+p <- ggplot(combined_data, aes(x = Ethnicity, y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
@@ -1525,80 +1589,74 @@ p <- ggplot(combined_data, aes(x = Ethnicity, y = Prob_MedicalDelegate, group = 
 print(p)
 ```
 
-```{r}
-# Calculate the total number of individuals
-Age_count_us <- aggregate(MedicalDelegate1 ~ Ethnicity, data = test.data.us, length)
-sum_age_us <- sum (table(test.data.us$Ethnicity))
-Age_count_sg <- aggregate(MedicalDelegate1 ~ Ethnicity, data = test.data.sg, length)
-sum_age_sg <- sum (table(test.data.sg$Ethnicity))
+The green trend line represents the likelihood of medical delegating decisions that differ in Ethnicity between the Majority ("Chinese") and Underrepresented ("Malay", "Indian", "Eurasian") for SG participants. It has a decreasing trend, which shows that SG participants who have Underrepresented Ethnicity ("Malay", "Indian", "Eurasian") might have a lower percentage of delegating in making medical decisions compared with SG participants whose Ethnicity is "Chinese". 
 
-# Calculate the proportion of financial delegation as a percentage
-Age_count_us$Proportion <- Age_count_us$MedicalDelegate1 / sum_age_us * 100
-Age_count_sg$Proportion <- Age_count_sg$MedicalDelegate1 / sum_age_sg * 100
-
-Age_count_us$Country <- 'US'
-Age_count_sg$Country <- 'SG'
-
-# dataframe
-Age_count_us$Ethnicity <- factor(Age_count_us$Ethnicity, 
-                                             levels = c(1, 2),
-                                             labels = c("Majority", "Underrepresented"))
-
-Age_count_sg$Ethnicity <- factor(Age_count_sg$Ethnicity, 
-                                             levels = c(1, 2),
-                                             labels = c("Majority", "Underrepresented"))
-
-combined_data <- rbind(Age_count_us, Age_count_sg)
-
-p <- ggplot(combined_data, aes(x = Ethnicity, y = Proportion, group = Country)) +
-  geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
-  scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
-  geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
-            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
-  scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
-  theme_minimal() +
-  labs(title = "Financial Delegation by Ethnicity",
-       x = "Ethnicity",
-       y = "Percentage of Financial Delegation") +
-  guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
-
-print(p)
-```
-
-
-
-The green trend line represents the likelihood of medical delegating decisions that differ in Ethnicity between the Majority ("Chinese") and Underrepresented ("Malay", "Indian", "Eurasian") for SG participants. It has an increasing trend, which shows that SG participants who have Underrepresented Ethnicity ("Malay", "Indian", "Eurasian") might have a higher percentage of delegating in making medical decisions compared with SG participants whose Ethnicity is "Chinese". 
-
-The blue trend line represents the likelihood of medical delegating decisions that differ in Ethnicity between the Majority ("White") and Underrepresented ("His/Lat", "Black", "Mixed", "Asian", "Others", "Native") for US participants. It has a flat trend, which shows that US participants who have Underrepresented Ethnicity ("His/Lat", "Black", "Mixed", "Asian", "Others", or "Native") might have a similar percentage of delegating in making medical decisions compared with US participants whose Ethnicity is "White". s
+The blue trend line represents the likelihood of medical delegating decisions that differ in Ethnicity between the Majority ("White") and Underrepresented ("His/Lat", "Black", "Mixed", "Asian", "Others", "Native") for US participants. It has a decreasing trend, which shows that US participants who have Underrepresented Ethnicity ("His/Lat", "Black", "Mixed", "Asian", "Others", or "Native") might have a lower percentage of delegating in making medical decisions compared with US participants whose Ethnicity is "White". 
 
 
 
 ## Marital
 ```{r}
-# fitted probabilities
-test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
-test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# # fitted probabilities
+# test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
+# test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# 
+# # aggregate Marital for US and SG
+# Marital_percentage_us <- aggregate(Prob_MedicalDelegate ~ Marital, data = test.data.us, mean)
+# Marital_percentage_sg <- aggregate(Prob_MedicalDelegate ~ Marital, data = test.data.sg, mean)
+# 
+# # convert probabilities to percentages
+# Marital_percentage_us$Prob_MedicalDelegate <- Marital_percentage_us$Prob_MedicalDelegate * 100
+# Marital_percentage_sg$Prob_MedicalDelegate <- Marital_percentage_sg$Prob_MedicalDelegate * 100
+# 
+# Marital_percentage_us$Country <- 'US'
+# Marital_percentage_sg$Country <- 'SG'
+# 
+# # Combine the data frames
+# combined_data <- rbind(Marital_percentage_us, Marital_percentage_sg)
+# 
+# p <- ggplot(combined_data, aes(x = Marital, y = Prob_MedicalDelegate, group = Country)) +
+#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Medical Delegation by Marital",
+#        x = "Marital",
+#        y = "Percentage of Medical Delegation") +
+#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+# 
+# print(p)
+```
 
-# aggregate Marital for US and SG
-Marital_percentage_us <- aggregate(Prob_MedicalDelegate ~ Marital, data = test.data.us, mean)
-Marital_percentage_sg <- aggregate(Prob_MedicalDelegate ~ Marital, data = test.data.sg, mean)
+```{r}
+# Calculate the total number of individuals
+count_us <- aggregate(MedicalDelegate1 ~ Marital, data = test.data.us, length)
+sum_us <- sum (table(test.data.us$Marital))
+count_sg <- aggregate(MedicalDelegate1 ~ Marital, data = test.data.sg, length)
+sum_sg <- sum (table(test.data.sg$Marital))
 
-# convert probabilities to percentages
-Marital_percentage_us$Prob_MedicalDelegate <- Marital_percentage_us$Prob_MedicalDelegate * 100
-Marital_percentage_sg$Prob_MedicalDelegate <- Marital_percentage_sg$Prob_MedicalDelegate * 100
+# Calculate the proportion of financial delegation as a percentage
+count_us$Proportion <- count_us$MedicalDelegate1 / sum_us * 100
+count_sg$Proportion <- count_sg$MedicalDelegate1 / sum_sg * 100
 
-Marital_percentage_us$Country <- 'US'
-Marital_percentage_sg$Country <- 'SG'
+count_us$Country <- 'US'
+count_sg$Country <- 'SG'
 
-# Combine the data frames
-combined_data <- rbind(Marital_percentage_us, Marital_percentage_sg)
+# dataframe
+count_us$Marital <- factor(count_us$Marital,levels = c("Unmarried","Married","Once Married"), labels = c("Unmarried","Married","Once Married"))
 
-p <- ggplot(combined_data, aes(x = Marital, y = Prob_MedicalDelegate, group = Country)) +
+count_sg$Marital <- factor(count_sg$Marital,levels = c("Unmarried","Married","Once Married"), labels = c("Unmarried","Married","Once Married"))
+
+combined_data <- rbind(count_us, count_sg)
+
+p <- ggplot(combined_data, aes(x = Marital, y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
@@ -1610,34 +1668,73 @@ p <- ggplot(combined_data, aes(x = Marital, y = Prob_MedicalDelegate, group = Co
 print(p)
 ```
 
-The green trend line represents the likelihood of medical delegating decisions that differ among Marital status for SG participants. It has a decreasing trend, which shows that the unmarried SG participants have the highest percentage of delegating medical decisions about 42.3%, but the once-married SG participants have the lowest percentage of delegating medical decisions about 33.3%. The blue trend line represents the likelihood of medical delegating decisions that differ among Marital status for US participants, which has an increasing trend. It shows that unmarried US participants have the lowest percentage of delegating medical decisions about 33.6%, but the once-married US participants have the highest percentage of delegating medical decisions about 36.4%.
+# Unmarried is the baseline
+Both trend lines represent the likelihood of medical delegating decisions that differ among Marital status. Both have a decreasing trend, which shows that in general, the unmarried participants have higher likelihood of medical delegation than married or once married participants. In numerical detail, both US and SG married participants have the highest likelihood of medical delegation with 40.5% and 56.6% respectively. However, the unmarried and married participants in US has similar percentage of medical delegation. Besides, both US and SG once married participants have the lowest likelihood of medical delegation with 19.6% and 6.9% respectively. 
+
 
 
 ## IADL
 ```{r}
-# fitted probabilities
-test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
-test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# # fitted probabilities
+# test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
+# test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# 
+# # aggregate IADL for US and SG
+# IADL_percentage_us <- aggregate(Prob_MedicalDelegate ~ IADL, data = test.data.us, mean)
+# IADL_percentage_sg <- aggregate(Prob_MedicalDelegate ~ IADL, data = test.data.sg, mean)
+# 
+# # convert probabilities to percentages
+# IADL_percentage_us$Prob_MedicalDelegate <- IADL_percentage_us$Prob_MedicalDelegate * 100
+# IADL_percentage_sg$Prob_MedicalDelegate <- IADL_percentage_sg$Prob_MedicalDelegate * 100
+# 
+# IADL_percentage_us$Country <- 'US'
+# IADL_percentage_sg$Country <- 'SG'
+# # dataframe
+# combined_data <- rbind(IADL_percentage_us, IADL_percentage_sg)
+# combined_data$IADL <- as.numeric(as.character(combined_data$IADL))
+# 
+# p <- ggplot(combined_data, aes(x = IADL, y = Prob_MedicalDelegate, group = Country)) +
+#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Medical Delegation by IADL",
+#        x = "IADL",
+#        y = "Percentage of Medical Delegation") +
+#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+# 
+# print(p)
+```
 
-# aggregate IADL for US and SG
-IADL_percentage_us <- aggregate(Prob_MedicalDelegate ~ IADL, data = test.data.us, mean)
-IADL_percentage_sg <- aggregate(Prob_MedicalDelegate ~ IADL, data = test.data.sg, mean)
+```{r}
+# Aggregate medical delegation by IADL score
+# group the MedicalDelegate1 data by the IADL variable
+# function sums up the MedicalDelegate1 values within each IADL group.
+IADL_delegation_us <- aggregate(MedicalDelegate1 ~ IADL, data = test.data.us, FUN = function(x) { sum(x) })
+IADL_delegation_sg <- aggregate(MedicalDelegate1 ~ IADL, data = test.data.sg, FUN = function(x) { sum(x) })
 
-# convert probabilities to percentages
-IADL_percentage_us$Prob_MedicalDelegate <- IADL_percentage_us$Prob_MedicalDelegate * 100
-IADL_percentage_sg$Prob_MedicalDelegate <- IADL_percentage_sg$Prob_MedicalDelegate * 100
+# Calculate the total count
+total_delegation_us <- sum(IADL_delegation_us$MedicalDelegate1)
+total_delegation_sg <- sum(IADL_delegation_sg$MedicalDelegate1)
 
-IADL_percentage_us$Country <- 'US'
-IADL_percentage_sg$Country <- 'SG'
-# dataframe
-combined_data <- rbind(IADL_percentage_us, IADL_percentage_sg)
-combined_data$IADL <- as.numeric(as.character(combined_data$IADL))
+# Calculate the proportion
+IADL_delegation_us$Proportion <- (IADL_delegation_us$MedicalDelegate1 / total_delegation_us) * 100
+IADL_delegation_sg$Proportion <- (IADL_delegation_sg$MedicalDelegate1 / total_delegation_sg) * 100
 
-p <- ggplot(combined_data, aes(x = IADL, y = Prob_MedicalDelegate, group = Country)) +
+IADL_delegation_us$Country <- 'US'
+IADL_delegation_sg$Country <- 'SG'
+
+combined_data <- rbind(IADL_delegation_us, IADL_delegation_sg)
+
+
+p <- ggplot(combined_data, aes(x = as.factor(IADL), y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
@@ -1649,38 +1746,71 @@ p <- ggplot(combined_data, aes(x = IADL, y = Prob_MedicalDelegate, group = Count
 print(p)
 ```
 
-This plot shows that based on the Instrumental Activities of Daily Living (IADL) with a range [0,1], how individuals' percentage to delegate medical decisions differ in the US and SG. 
+This plot shows that based on the Instrumental Activities of Daily Living (IADL) with a range [0,1], how individuals' percentage to delegate medical decisions differ in US and SG. 
 Both the green trend line (SG) and the blue trend line (US) exhibit an increase in the likelihood of medical delegation as IADL scores increase, which shows a positive correlation between IADL scores and the percentage of medical delegation.
-Moreover, with the same IADL score, the Percentage of Medical Delegation is higher in SG compared with the US.
-
+Moreover, when IADL score is less than 0.5, the Percentage of medical Delegation is higher in SG compared with the US. When IADL score is larger than 0.5, the Percentage of medical Delegation is higher in US compared with the SG.
 
 
 
 ## ADL
 ```{r}
-# fitted probabilities
-test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
-test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# # fitted probabilities
+# test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
+# test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# 
+# # aggregate ADL for US and SG
+# ADL_percentage_us <- aggregate(Prob_MedicalDelegate ~ ADL, data = test.data.us, mean)
+# ADL_percentage_sg <- aggregate(Prob_MedicalDelegate ~ ADL, data = test.data.sg, mean)
+# 
+# # convert probabilities to percentages
+# ADL_percentage_us$Prob_MedicalDelegate <- ADL_percentage_us$Prob_MedicalDelegate * 100
+# ADL_percentage_sg$Prob_MedicalDelegate <- ADL_percentage_sg$Prob_MedicalDelegate * 100
+# 
+# ADL_percentage_us$Country <- 'US'
+# ADL_percentage_sg$Country <- 'SG'
+# # dataframe
+# combined_data <- rbind(ADL_percentage_us, ADL_percentage_sg)
+# combined_data$ADL <- as.numeric(as.character(combined_data$ADL))
+# 
+# p <- ggplot(combined_data, aes(x = ADL, y = Prob_MedicalDelegate, group = Country)) +
+#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Medical Delegation by ADL",
+#        x = "ADL",
+#        y = "Percentage of Medical Delegation") +
+#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+# 
+# print(p)
+```
 
-# aggregate ADL for US and SG
-ADL_percentage_us <- aggregate(Prob_MedicalDelegate ~ ADL, data = test.data.us, mean)
-ADL_percentage_sg <- aggregate(Prob_MedicalDelegate ~ ADL, data = test.data.sg, mean)
+```{r}
+# Aggregate medical delegation by ADL score
+ADL_delegation_us <- aggregate(MedicalDelegate1 ~ ADL, data = test.data.us, FUN = function(x) { sum(x) })
+ADL_delegation_sg <- aggregate(MedicalDelegate1 ~ ADL, data = test.data.sg, FUN = function(x) { sum(x) })
 
-# convert probabilities to percentages
-ADL_percentage_us$Prob_MedicalDelegate <- ADL_percentage_us$Prob_MedicalDelegate * 100
-ADL_percentage_sg$Prob_MedicalDelegate <- ADL_percentage_sg$Prob_MedicalDelegate * 100
+# Calculate the total count
+total_delegation_us <- sum(ADL_delegation_us$MedicalDelegate1)
+total_delegation_sg <- sum(ADL_delegation_sg$MedicalDelegate1)
 
-ADL_percentage_us$Country <- 'US'
-ADL_percentage_sg$Country <- 'SG'
-# dataframe
-combined_data <- rbind(ADL_percentage_us, ADL_percentage_sg)
-combined_data$ADL <- as.numeric(as.character(combined_data$ADL))
+# Calculate the proportion
+ADL_delegation_us$Proportion <- (ADL_delegation_us$MedicalDelegate1 / total_delegation_us) * 100
+ADL_delegation_sg$Proportion <- (ADL_delegation_sg$MedicalDelegate1 / total_delegation_sg) * 100
 
-p <- ggplot(combined_data, aes(x = ADL, y = Prob_MedicalDelegate, group = Country)) +
+ADL_delegation_us$Country <- 'US'
+ADL_delegation_sg$Country <- 'SG'
+
+combined_data <- rbind(ADL_delegation_us, ADL_delegation_sg)
+
+p <- ggplot(combined_data, aes(x = as.factor(ADL), y = Proportion, group = Country)) +
   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
   theme_minimal() +
@@ -1693,9 +1823,10 @@ print(p)
 ```
 
 
-This plot shows that based on the Activities of Daily Living (ADL) with a range [0,1], how individuals' percentage to delegate medical decisions differ in the US and SG. 
-Both the green trend line (SG) and the blue trend line (US) exhibit an increase in the likelihood of medical delegation as ADL scores increase, which shows a positive correlation between ADL scores and the percentage of medical delegation.
-Moreover, with the same ADL score, the Percentage of Medical Delegation is higher in SG compared with the US. And as ADL scores closer to 1, the percentage of Medical Delegation in these two countries gets closer as well. 
+This plot shows that based on the Activities of Daily Living (ADL) with a range [0,1], how is individuals percentage to delegate medical decisions differ in US and SG. 
+The blue trend line (US) exhibit an increase in the likelihood of medical delegation as ADL scores increase, which shows a positive correlation between ADL scores and the percentage of medical delegation in US. The green line (SG) has a flat trend, which shows that the ADL score might be insignificant when considering the likelihood of medical delegation in SG.
+Moreover, when ADL score is less than 0.5, the Percentage of medical Delegation is higher in SG compared with the US. When ADL score is larger than 0.5, the Percentage of medical Delegation is higher in US compared with the SG.
+
 
 
 # Plots for significant predictors in US & SG model
@@ -2055,7 +2186,6 @@ print(percentage_informal_both)
 # for participants who only do medical delegates
 sg_not_both <- test.data.sg %>%
   filter(MedicalDelegate1 == 0 | FinanceDelegate1 == 0)
-
 medical_assit<-sum(sg_not_both$MedicalDelegate1 == 1)
 formal_medical<-sum(sg_not_both$MedicalDelegate2 == "Assist-formal")
 informal_medical<-sum(sg_not_both$MedicalDelegate2 == "Assist-informal")
@@ -2077,6 +2207,24 @@ print(percentage_informal)
 
 ```
 
+# Percentage of proxies who are involved in both delegation duties 
+In SG dataset, there are 30.92105% (94/304) of proxies who are involved in both delegation duties (medical and financial) < 50% 
+There are 210 participants who only do medical delegates or only do financial delegates 
+
+For SG participants who do both medical and financial delegates, 
+Both Formal in medical and financial delegates: 6.382979% 
+Both Informal in medical and financial delegates: 27.65957% 
+N=94 
+
+For SG participants who only do medical delegates, 
+Formal: 37.5% 
+Informal: 62.5% 
+N=32
+
+For SG participants who only do finance delegates, 
+Formal: 8.823529% 
+Informal: 91.17647%  
+N=34 
 
 
 ```{r}
