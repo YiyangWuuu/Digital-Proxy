@@ -1,5 +1,5 @@
 ---
-title: "US model & SG data on US model & SG model"
+title: "US model SG data on US model SG model"
 author: "Wu Yiyang"
 date: "2024-02-03"
 output: pdf_document
@@ -22,6 +22,7 @@ library(dplyr)
 dat <- read_csv("~/OneDrive - University of Toronto/Digital Proxy Practicum/Cleaned data/cleaned_combined.csv")
 my.dat <- dat
 # view(my.dat)
+data <- country_data(my.dat, "US")
 ```
 
 
@@ -34,8 +35,14 @@ my.dat$Country <- factor(my.dat$Country, levels = c("US","SG"), labels = c("US",
 
 my.dat$Marital[is.na(my.dat$Marital)] = "3"
 my.dat$Marital <- factor(my.dat$Marital, 
-                         levels = c("Unmarried","Married","Div/Sep","Widowed"),
-                         labels = c("Unmarried","Married","Once Married","Once Married"), ordered = TRUE)
+                         levels = c("Div/Sep","Widowed","Unmarried","Married"),
+                         labels = c("Once Married","Once Married","Unmarried","Married"))
+
+# my.dat$Marital[is.na(my.dat$Marital)] = "3"
+# my.dat$Marital <- factor(my.dat$Marital, 
+#                          levels = c("Unmarried","Married","Div/Sep","Widowed"),
+#                          labels = c("Unmarried","Married","Once Married","Once Married"))
+# ordered = TRUE
 
 #my.dat$Marital[is.na(my.dat$Marital)] = "Not Specified"
 #my.dat$Marital <- factor(my.dat$Marital, 
@@ -587,8 +594,9 @@ us_filtered_data <- subset(us_filtered_data, !(FinanceJointAccount=="Exclude"))
 us_filtered_data <- subset(us_filtered_data, !(Marital=="3"))
 
 # Create test dataframe with only demographic predictors
-test.data.us = us_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity',
-                            'Siblings','Marital')]
+test.data.us = us_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital')]
+# 'Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital'
+# test.data.us = us_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','HelpImmediateFam','HelpRelatives','HelpFriends','FinanceHelpImmediateFam','FinanceHelpRelatives','FinanceHelpFriends','MedicalHelpImmediateFam','MedicalHelpRelatives','MedicalHelpFriends')]
 
 #how much help participants have provided for an adult in carrying out their instrumental activities of daily living
 test.data.us$IADL = rowSums(us_filtered_data[ , c("HelpTransport","HelpMed","HelpFinance","HelpFood","HelpLaundry","HelpHousekeep")])
@@ -641,17 +649,18 @@ confint.default(modelFinLevel1_new)
 
 \newpage
 
+
 # US financial model
 
 Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
 | --- | --- | --- | --- | --- | --- | --- | 
-|(Intercept) | $\hat{\beta}_0$ | -4.87 | 0.65 | -7.47 | [-6.18,-3.62] | 7.99e-14 *** | 
+|(Intercept) | $\hat{\beta}_0$ | -4.82 | 0.69 | -7.04 | [-6.20,-3.51] | 7.99e-14 *** | 
 | Age | $\hat{\beta}_1$ | -0.07 | 0.04 | -2.06 | [-0.14,-0.004] | 0.039 * | 
 | Income | $\hat{\beta}_2$ | 0.18 | 0.09 | 2.08 | [0.01,0.36] | 0.038 * | 
 | Gender: Male | $\hat{\beta}_3$ | 0.57 | 0.19 | 2.94 | [0.19,0.96] | 0.003 ** | 
 | Education | $\hat{\beta}_4$ | 0.36 | 0.18 | 1.96 | [0.0006,0.72] | 0.05 . | 
-| Marital: Married | $\hat{\beta}_5$ | 0.22 | 0.21 | 1.06 | [-0.19,0.64] | 0.29 | 
-| Marital: Unmarried | $\hat{\beta}_6$ | -0.28 | 0.17 | -1.615 | [-0.62,0.06] | 0.11 | 
+| Marital: Married | $\hat{\beta}_5$ | 0.18 | 0.28 | 0.66 | [-0.36,0.73] | 0.51 | 
+| Marital: Unmarried | $\hat{\beta}_6$ | -0.32 | 0.30 | -1.06 | [-0.91,0.27] | 0.29 | 
 | IADL | $\hat{\beta}_7$ | 3.49 | 0.52 | 6.78 | [2.51,4.53] | 1.20e-11 *** | 
 | ADL | $\hat{\beta}_8$ | 0.82 | 0.32 | 2.59 | [0.20,1.45] | 0.01 ** | 
 
@@ -755,19 +764,20 @@ confint.default(modelMedLevel1_new)
 
 \newpage
 
+
 # US Medical model
 
 Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
 | --- | --- | --- | --- | --- | --- | --- | 
-|(Intercept) | $\hat{\beta}_0$ | -3.68 | 0.86 | -4.26 | [-5.40,-2.01] | 2.02e-05 *** | 
+|(Intercept) | $\hat{\beta}_0$ | -3.57 | 0.88 | -4.04 | [-5.33,-1.86] | 5.32e-05 *** | 
 | Age | $\hat{\beta}_1$ | -0.13 | 0.04 | -3.36 | [-0.22,-0.05] | 0.001 *** | 
 | Gender: Male | $\hat{\beta}_2$ | 0.61 | 0.20 | 3.03 | [0.22,1.01] | 0.002 ** | 
 | Education | $\hat{\beta}_3$ | 0.42 | 0.18 | 2.30 | [0.06,0.78] | 0.02 * | 
 | Employment: Unemployed | $\hat{\beta}_4$ | -0.34 | 0.22 | -1.56 | [-0.78,0.09] | 0.12 | 
 | Ethnicity: Underrepresented | $\hat{\beta}_5$ | -0.47 | 0.22 | -2.12 | [-0.90,-0.04] | 0.034 * | 
 | Siblings | $\hat{\beta}_6$ | 0.22 | 0.08 | 2.84 | [0.07,0.37] | 0.0045 ** | 
-| Marital: Married | $\hat{\beta}_7$ | 0.32 | 0.22 | 1.47 | [-0.11,0.76] | 0.14 | 
-| Marital: Unmarried | $\hat{\beta}_8$ | -0.29 | 0.17 | -1.72 | [-0.63,0.04] | 0.086 . | 
+| Marital: Married | $\hat{\beta}_7$ | 0.13 | 0.28 | 0.47 | [-0.42,0.68] | 0.64 | 
+| Marital: Unmarried | $\hat{\beta}_8$ | -0.49 | 0.31 | -1.47 | [-1.07,0.16] | 0.14 | 
 | IADL | $\hat{\beta}_9$ | 2.69 | 0.53 | 5.13 | [1.69,3.75] | 2.86e-07 *** | 
 | ADL | $\hat{\beta}_{10}$ | 1.39 | 0.33 | 4.18 | [0.74,2.04] | 2.98e-05 *** | 
 
@@ -827,8 +837,8 @@ sg_filtered_data <- subset(sg_filtered_data, !(FinanceJointAccount=="Exclude"))
 sg_filtered_data <- subset(sg_filtered_data, !(Marital=="3"))
 
 # Create test dataframe with only demographic predictors
-test.data.sg = sg_filtered_data[,c('Age','Income','Housing','Gender','Education','Religion','Employment','Ethnicity',
-                            'Siblings','Marital')]
+test.data.sg = sg_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital')]
+# test.data.sg = sg_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital', 'HelpImmediateFam','HelpRelatives','HelpFriends','FinanceHelpImmediateFam','FinanceHelpRelatives','FinanceHelpFriends','MedicalHelpImmediateFam','MedicalHelpRelatives','MedicalHelpFriends')]
 
 #how much help participants have provided for an adult in carrying out their instrumental activities of daily living
 test.data.sg$IADL = rowSums(sg_filtered_data[ , c("HelpTransport","HelpMed","HelpFinance","HelpFood","HelpLaundry","HelpHousekeep")])
@@ -869,17 +879,20 @@ confint(modelFinLevel2,level = 0.95)
 confint.default(modelFinLevel2)
 ```
 \newpage
+
+
+---
 # SG data on US financial model
 
 Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
 | --- | --- | --- | --- | --- | --- | --- | 
-|(Intercept) | $\hat{\beta}_0$ | -3.03 | 1.06 | -2.85 | [-5.16,-0.98] | 0.004 ** | 
+|(Intercept) | $\hat{\beta}_0$ | -2.52 | 1.16 | -2.17 | [-4.85,-0.29] | 0.0299 * | 
 | Age | $\hat{\beta}_1$ | -0.25 | 0.06 | -4.03 | [-0.38,-0.13] | 5.48e-05 *** | 
 | Income | $\hat{\beta}_2$ | 0.026 | 0.12 | 0.23 | [-0.20,0.26] | 0.82 | 
 | Gender: Male | $\hat{\beta}_3$ | 0.31 | 0.28 | 1.09 | [-0.25,0.86] | 0.28 | 
 | Education | $\hat{\beta}_4$ | 0.67 | 0.33 | 2.05 | [0.04,1.33] | 0.04 * | 
-| Marital: Married | $\hat{\beta}_5$ | 0.73 | 0.47 | 1.55 | [-0.21,1.66] | 0.12 | 
-| Marital: Unmarried | $\hat{\beta}_6$ | -0.018 | 0.31 | -0.058 | [-0.64,0.58] | 0.95 | 
+| Marital: Married | $\hat{\beta}_5$ | -0.49 | 0.62 | -0.79 | [-1.70,0.76] | 0.43 | 
+| Marital: Unmarried | $\hat{\beta}_6$ | -1.03 | 0.67 | -1.55 | [-2.34,0.30] | 0.12 | 
 | IADL | $\hat{\beta}_7$ | 2.87 | 0.74 | 3.90 | [1.46,4.36] | 9.66e-05 *** | 
 | ADL | $\hat{\beta}_8$ | 0.89 | 0.51 | 1.73 | [-0.11,1.90] | 0.08 . | 
 
@@ -900,20 +913,21 @@ confint(modelMedLevel2,level = 0.95)
 confint.default(modelMedLevel2)
 ```
 \newpage
+  
 
 ## SG data on US Medical model
 
 Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
 | --- | --- | --- | --- | --- | --- | --- | 
-|(Intercept) | $\hat{\beta}_0$ | -2.47 | 1.53 | -1.62 | [-5.48,0.53] | 0.11 | 
+|(Intercept) | $\hat{\beta}_0$ | -2.23 | 1.59 | -1.41 | [-5.48,0.53] | 0.16 | 
 | Age | $\hat{\beta}_1$ | -0.25 | 0.06 | -3.89 | [-0.37,-0.12] | 0.0001 *** | 
 | Gender: Male | $\hat{\beta}_2$ | 0.24 | 0.28 | 0.85 | [-0.32,0.80] | 0.40 | 
 | Education | $\hat{\beta}_3$ | 0.21 | 0.32 | 0.67 | [-0.41,0.83] | 0.51 | 
 | Employment: Unemployed | $\hat{\beta}_4$ | -0.30 | 0.44 | -0.68 | [-1.19,0.54] | 0.50 | 
 | Ethnicity: Underrepresented | $\hat{\beta}_5$ | -0.79 | 0.36 | 2.21 | [0.1,1.50] | 0.03 * | 
 | Siblings | $\hat{\beta}_6$ | 0.057 | 0.12 | 0.47 | [-0.18,0.30] | 0.64 | 
-| Marital: Married | $\hat{\beta}_7$ | 0.53 | 0.467 | 1.14 | [-0.40,1.44] | 0.25 | 
-| Marital: Unmarried | $\hat{\beta}_8$ | -0.34 | 0.29 | -1.18 | [-0.93,0.22] | 0.24 | 
+| Marital: Married | $\hat{\beta}_7$ | 0.04 | 0.60 | 0.07 | [-1.11,1.26] | 0.94 | 
+| Marital: Unmarried | $\hat{\beta}_8$ | -0.75 | 0.66 | -1.14 | [-2.04,0.56] | 0.25 | 
 | IADL | $\hat{\beta}_9$ | 2.68 | 0.72 | 3.75 | [1.31,4.13] | 0.0002 *** | 
 | ADL | $\hat{\beta}_{10}$ | 0.73 | 0.49 | 1.48 | [-0.23,1.70] | 0.14 | 
 
@@ -964,7 +978,7 @@ test.data.sg$FinanceDelegate1 <- as.numeric(as.character(test.data.sg$FinanceDel
 
 modelFinLevel3 <- glm(FinanceDelegate1 ~ . - lowstakeMed - highstakeMed
                       - MedicalDelegate1 - MedicalDelegate2
-                      - FinanceDelegate2 - Religion, data=test.data.sg, family = "binomial")
+                      - FinanceDelegate2, data=test.data.sg, family = "binomial")
 
 summary(modelFinLevel3)
 modelFinLevel3_new <- stepAIC(modelFinLevel3)
@@ -1017,12 +1031,14 @@ $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-294.59/413.82=0.29$
 
 ```{r}
 # Provides min, median, mean, max, and quartiles
+# table(test.data.us$Age)
+table(test.data.sg$Age)
 summary(digital_proxySG$Age)
 # Standard deviation of Age
 sd(digital_proxySG$Age)
 
 # Percentage of each category in Education
-table(test.data.us$Education)
+# table(test.data.us$Education)
 table(test.data.sg$Education)
 prop.table(table(test.data.sg$Education)) * 100  
 median(test.data.sg$Income)
@@ -1030,6 +1046,8 @@ median(test.data.sg$Income)
 # Percentage of each category in Religion
 prop.table(table(test.data.sg$Religion)) * 100  
 
+table(digital_proxyUS$Ethnicity)
+table(digital_proxySG$Ethnicity)
 # Percentage of each category in Ethnicity
 prop.table(table(test.data.sg$Ethnicity)) * 100
 prop.table(table(digital_proxySG$Ethnicity)) * 100 
@@ -1095,18 +1113,19 @@ confint.default(modelMedLevel3_new)
 ```
 
 \newpage
-
+ 
+---
 # SG Medical model
 
 Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
 | --- | --- | --- | --- | --- | --- | --- | 
-|(Intercept) | $\hat{\beta}_0$ | -3.39 | 0.97 | -3.50 | [-5.33,-1.52] | 0.0005 *** | 
+|(Intercept) | $\hat{\beta}_0$ | -3.04 | 1.12 | -2.71 | [-5.28,-0.88] | 0.006660 ** | 
 | Age | $\hat{\beta}_1$ | -0.26 | 0.06 | -4.33 | [-0.38,-0.14] | 1.51e-05 *** | 
 | Income | $\hat{\beta}_2$ | 0.18 | 0.11 | 1.57 | [-0.04,0.40] | 0.12 | 
 | Housing | $\hat{\beta}_3$ | 0.54 | 0.34 | 1.62 | [-0.11,1.22] | 0.10 | 
 | Ethnicity: Underrepresented | $\hat{\beta}_4$ | 0.90 | 0.35 | 2.55 | [0.21,1.61] | 0.01 * | 
-| Marital: Married | $\hat{\beta}_5$ | 0.60 | 0.46 | 1.31 | [-0.32,1.50] | 0.19 | 
-| Marital: Unmarried | $\hat{\beta}_6$ | -0.18 | 0.30 | -0.58 | [-0.79,0.41] | 0.56 | 
+| Marital: Married | $\hat{\beta}_5$ | -0.21 | 0.61 | -0.34 | [-1.39,1.03] | 0.73 | 
+| Marital: Unmarried | $\hat{\beta}_6$ | -0.85 | 0.65 | -1.31 | [-2.12,0.45] | 0.19 | 
 | IADL | $\hat{\beta}_7$ | 2.54 | 0.72 | 3.54 | [1.16,3.98] | 0.0004 *** | 
 | ADL | $\hat{\beta}_8$ | 0.85 | 0.50 | 1.69 | [-0.13,1.85] | 0.09 . | 
 
@@ -1119,13 +1138,13 @@ $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-313.24/412.49=0.24$
 
 Variable | Coefficient | Estimate | Standard Error | z-value | 95% CI | p-value |
 | --- | --- | --- | --- | --- | --- | --- | 
-|(Intercept) | $\hat{\beta}_0$ | -3.39 | 0.97 | -3.50 | [-5.33,-1.52] | 0.0005 *** | 
+|(Intercept) | $\hat{\beta}_0$ | -3.04 | 1.12 | -2.71 | [-5.28,-0.88] | 0.006660 ** | 
 | Age | $\hat{\beta}_1$ | -0.26 | 0.06 | -4.33 | [-0.38,-0.14] | 1.51e-05 *** | 
 | Income | $\hat{\beta}_2$ | 0.18 | 0.11 | 1.57 | [-0.04,0.40] | 0.12 | 
 | Housing | $\hat{\beta}_3$ | 0.54 | 0.34 | 1.62 | [-0.11,1.22] | 0.10 | 
 | Ethnicity: Underrepresented | $\hat{\beta}_4$ | 0.90 | 0.35 | 2.55 | [0.21,1.61] | 0.01 * | 
-| Marital: Married | $\hat{\beta}_5$ | 0.60 | 0.46 | 1.31 | [-0.32,1.50] | 0.19 | 
-| Marital: Unmarried | $\hat{\beta}_6$ | -0.18 | 0.30 | -0.58 | [-0.79,0.41] | 0.56 | 
+| Marital: Married | $\hat{\beta}_5$ | -0.21 | 0.61 | -0.34 | [-1.39,1.03] | 0.73 | 
+| Marital: Unmarried | $\hat{\beta}_6$ | -0.85 | 0.65 | -1.31 | [-2.12,0.45] | 0.19 | 
 | IADL | $\hat{\beta}_7$ | 2.54 | 0.72 | 3.54 | [1.16,3.98] | 0.0004 *** | 
 | ADL | $\hat{\beta}_8$ | 0.85 | 0.50 | 1.69 | [-0.13,1.85] | 0.09 . | 
 
@@ -1138,15 +1157,34 @@ $pR^2_{MF} = 1-(df_{residual}/df_{null})$ = $1-313.24/412.49=0.24$
 
 
 ```{r}
+table(test.data.us$Gender)
+# Percentage of each category in Gender
+table(test.data.sg$Gender)
+prop.table(table(test.data.sg$Gender)) * 100 
+
 # Percentage of each category in Income
+table(test.data.sg$Income)
 prop.table(table(test.data.sg$Income)) * 100 
 median(test.data.sg$Income)
 
 # Percentage of each category in Housing
+table(test.data.us$Housing)
+table(test.data.sg$Housing)
 prop.table(table(test.data.sg$Housing)) * 100  
 
+# table(test.data.us$Marital)
 # Percentage of each category in Marital
+table(test.data.sg$Marital)
 prop.table(table(test.data.sg$Marital)) * 100 
+
+# table(test.data.us$Siblings)
+# Percentage of each category in Siblings
+table(test.data.sg$Siblings)
+prop.table(table(test.data.sg$Siblings)) * 100 
+
+
+table(test.data.us$Employment)
+# Percentage of each category in Employment
 ```
 
 
@@ -1158,75 +1196,10 @@ prop.table(table(test.data.sg$Marital)) * 100
     - Percentage: low-income housing (4.276316%), apartment (78.618421%), familyhouse (17.105263%)
   + Marital
     - Percentage: Unmarried (36.513158%), Married (56.578947%), Once Married (6.907895%)
-    
-    
-
-
-
-```{r}
-# prop.table(table(test.data.us$Age)) * 100 
-# prop.table(table(test.data.sg$Age)) * 100 
-# 
-# df <- data.frame(
-#   Age = rep(c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"), each = 2),
-#   Percentage = c(8.523592, 10.1973684, 7.153729, 9.5394737, 11.719939, 11.8421053, 9.589041, 10.1973684, 9.436834, 8.2236842, 9.893455, 10.8552632, 8.523592, 8.2236842, 7.458143, 14.8026316, 8.523592, 11.8421053, 9.589041, 3.2894737, 9.589041, 0.9868421), 
-#   Country = rep(c("US", "SG"), 11)
-# )
-# 
-# library(ggplot2)
-# 
-# # Plot
-# p <- ggplot(df, aes(x = as.numeric(Age), y = Percentage, color = Country)) +
-#   geom_bar(aes(fill = Country), stat = "identity", position = position_dodge()) +
-#   geom_smooth(method = "lm", se = FALSE, position = position_dodge(width = 0.2)) + # trend lines
-#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
-#   scale_color_manual(values = c("US" = "blue", "SG" = "green")) +  # colors for trend lines
-#   geom_text(aes(label = sprintf("%.2f", Percentage), group = Country), vjust = -0.5, position = position_dodge(0.9)) +
-#   theme_minimal() +
-#   labs(title = "Percentage Distribution Across Country",
-#        x = "Age Level",
-#        y = "Percentage (%)")
-# # Print the plot
-# print(p)
-```
 
 # Plots for common predictors between US and SG for Financial model
 
 ## Age
-```{r}
-# # Add the fitted probabilities to dataset
-# test.data.us$FittedProbabilities <- modelFinLevel1_new$fitted.values
-# test.data.sg$FittedProbabilities <- modelFinLevel3_new$fitted.values
-# 
-# # Aggregate the fitted probabilities by age
-# Fitted_sum_us <- aggregate(FittedProbabilities ~ Age, data = test.data.us, mean)
-# Fitted_sum_sg <- aggregate(FittedProbabilities ~ Age, data = test.data.sg, mean)
-# 
-# # Convert to a percentage
-# Fitted_sum_us$Proportion <- Fitted_sum_us$FittedProbabilities * 100
-# Fitted_sum_sg$Proportion <- Fitted_sum_sg$FittedProbabilities * 100
-# 
-# Fitted_sum_us$Country <- 'US'
-# Fitted_sum_sg$Country <- 'SG'
-# 
-# combined_data <- rbind(Fitted_sum_us, Fitted_sum_sg)
-# 
-# 
-# p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Country)) +
-#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
-#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
-#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-#   geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Country),
-#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
-#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
-#   theme_minimal() +
-#   labs(title = "Financial Delegation by Age",
-#        x = "Age",
-#        y = "Percentage of Financial Delegation") +
-#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
-# 
-# print(p)
-```
 
 ```{r}
 # Calculate the total number of individuals in each age level
@@ -1833,91 +1806,641 @@ Moreover, when ADL score is less than 0.5, the Percentage of medical Delegation 
 
 ## US Financial model
 
-### Income
+### Age
+
 ```{r}
-# income
-predicted_probs_finance <- predict(modelFinLevel1_new, type = "response")
+# Calculate the total number of individuals
+us_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 1)
+us_not_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 0)
 
-test.data.us$predicted_probs_finance <- predicted_probs_finance
+count <- aggregate(FinanceDelegate1 ~ Age, data = us_proxies, length)
+sum <- sum (table(us_proxies$Age))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
 
-# Calculate predicted counts
-test.data.us$predicted_count_finance <- ifelse(test.data.us$predicted_probs_finance > 0.5, 1, 0)
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Age, data = us_not_proxies, length)
+sum_not <- sum (table(us_not_proxies$Age))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
 
-income_summary <- test.data.us %>%
-  group_by(Income) %>%
-  summarise(Proxy_Count = sum(predicted_count_finance),
-            Total_Count = n()) %>%
-  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
-         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
 
-# long format
-plot_data <- reshape2::melt(income_summary, id.vars = "Income", 
-                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+# dataframe
+count$Age <- factor(count$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
 
-# labels = c("1" = "<$30k", "2" = "$30k", "3" = "$50k", "4" = "$100k", "5" = "$150k", "6" = ">$200k")
-# Create the plot
-ggplot(plot_data, aes(x = Income, y = value, fill = variable)) +
-  geom_bar(aes(fill = variable), stat = 'identity', position = position_dodge(width = 0.8)) +
-  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "lightgreen")) +
-  geom_smooth(aes(color = variable), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", value), fill = variable),
+count_not_proxies$Age <- factor(count_not_proxies$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightblue", "Non-Proxies" = "lightgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
-  scale_color_manual(values = c("Proxy_Percentage" = "darkred", "Non_Proxy_Percentage" = "darkgreen")) +  # colors for trend lines
-  theme_minimal()+
-  labs(x = "Income", y = "Percentage Distribution Across Proxy Type",
-       title = "Distribution in Houshold Income Among Financial Digital Proxies and Non-Proxies",
-       fill = "Proxy Type") +
-  guides(fill = guide_legend(title = "variable"), color = guide_legend(title = "variable"))
+  scale_color_manual(values = c("Financial Proxies" = "blue", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Age",
+       x = "Age",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+This plot focuses on the significant predictor "age" in the US financial model. A decreasing trend shows that as the age of participants increases from 21 to over 70, the percentage of financial digital proxy decrease as well, which means that the higher age a person has, the lower the probability he might help with financial proxy.
+
+
+### Income
+
+```{r}
+# Calculate the total number of individuals
+us_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 1)
+us_not_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 0)
+
+count <- aggregate(FinanceDelegate1 ~ Income, data = us_proxies, length)
+sum <- sum (table(us_proxies$Income))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Income, data = us_not_proxies, length)
+sum_not <- sum (table(us_not_proxies$Income))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
+
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Income <- factor(count$Income,levels = c("1","2","3","4","5","6"), labels = c("<$30k", "$30k", "$50k", "$100k", "$150k", ">$200k"))
+
+count_not_proxies$Income <- factor(count_not_proxies$Income,levels = c("1","2","3","4","5","6"), labels = c("<$30k", "$30k", "$50k", "$100k", "$150k", ">$200k"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Income, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightblue", "Non-Proxies" = "lightgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Financial Proxies" = "blue", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Income",
+       x = "Income",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
 ```
 
 "1" = "<$30k", "2" = "$30k", "3" = "$50k", "4" = "$100k", "5" = "$150k", "6" = ">$200k"
 
-This plot focuses on the significant predictor "income" in the US financial model. An increasing trend shows that as annual household income increases from <$30k to >$200k, the percentage of financial digital proxy increases as well, which means that the higher income a person has, the higher the probability he might help with financial proxy.
+This plot focuses on the significant predictor "income" in the US financial model. A decreasing trend shows that as annual household income increases from <$30k to >$200k, the percentage of financial digital proxy decrease as well, which means that the higher income a person has, the lower the probability he might help with financial proxy.
+
 
 \newpage
 
 ### Gender
+
 ```{r}
-# Gender
-predicted_probs_finance <- predict(modelFinLevel1_new, type = "response")
+# Calculate the total number of individuals
+us_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 1)
+us_not_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 0)
 
-test.data.us$predicted_probs_finance <- predicted_probs_finance
+count <- aggregate(FinanceDelegate1 ~ Gender, data = us_proxies, length)
+sum <- sum (table(us_proxies$Gender))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
 
-# Calculate predicted counts
-test.data.us$predicted_count_finance <- ifelse(test.data.us$predicted_probs_finance > 0.5, 1, 0)
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Gender, data = us_not_proxies, length)
+sum_not <- sum (table(us_not_proxies$Gender))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
 
-gender_summary <- test.data.us %>%
-  group_by(Gender) %>%
-  summarise(Proxy_Count = sum(predicted_count_finance),
-            Total_Count = n()) %>%
-  mutate(Proxy_Percentage = (Proxy_Count / Total_Count) * 100,
-         Non_Proxy_Percentage = ((Total_Count - Proxy_Count) / Total_Count) * 100)
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
 
-# long format
-plot_data <- reshape2::melt(gender_summary, id.vars = "Gender", 
-                            measure.vars = c("Proxy_Percentage", "Non_Proxy_Percentage"))
+# dataframe
+count$Gender <- factor(count$Gender,levels = c(1, 2), labels = c("Female","Male"))
 
-plot_data$Gender <- factor(plot_data$Gender, levels = c(1, 2), labels = c("Female","Male"))
+count_not_proxies$Gender <- factor(count_not_proxies$Gender, levels = c(1, 2), labels = c("Female","Male"))
 
-# Create the plot
-ggplot(plot_data, aes(x = Gender, y = value, fill = variable)) +
-  geom_bar(aes(fill = variable), stat = 'identity', position = position_dodge(width = 0.8)) +
-  scale_fill_manual(values = c("Proxy_Percentage" = "pink", "Non_Proxy_Percentage" = "lightgreen")) +
-  geom_smooth(aes(color = variable), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
-  geom_text(aes(label = sprintf("%.1f%%", value), fill = variable),
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Gender, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightblue", "Non-Proxies" = "lightgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
-  scale_color_manual(values = c("Proxy_Percentage" = "darkred", "Non_Proxy_Percentage" = "darkgreen")) +  # colors for trend lines
-  theme_minimal()+
-  labs(x = "Gender", y = "Percentage Distribution Across Proxy Type",
-       title = "Distribution of Gender Among Financial Digital Proxies and Non-Proxies",
-       fill = "Proxy Type") +
-  guides(fill = guide_legend(title = "variable"), color = guide_legend(title = "variable"))
+  scale_color_manual(values = c("Financial Proxies" = "blue", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Gender",
+       x = "Gender",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
 ```
 
-This plot focuses on the significant predictor "Gender" in the US financial model. It shows that female participants have a higher percentage in non-financial proxy and male participants have a higher percentage in financial proxy.
+This plot focuses on the significant predictor "Gender" in the US financial model. It shows that male participants have a higher percentage in financial proxy compared with female participants.
+
+
+### Education
+
+```{r}
+# Calculate the total number of individuals
+us_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 1)
+us_not_proxies <- test.data.us %>%
+  filter(FinanceDelegate1 == 0)
+
+count <- aggregate(FinanceDelegate1 ~ Education, data = us_proxies, length)
+sum <- sum (table(us_proxies$Education))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Education, data = us_not_proxies, length)
+sum_not <- sum (table(us_not_proxies$Education))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
+
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Education <- factor(count$Education, levels = c(1, 2, 3),
+                                  labels = c("< High School", "High School", "Degree and above"))
+
+count_not_proxies$Education <- factor(count_not_proxies$Education, levels = c(1, 2, 3),
+                                  labels = c("< High School", "High School", "Degree and above"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Education, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightgreen", "Non-Proxies" = "darkgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Financial Proxies" = "lightgreen", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Education",
+       x = "Education",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+This plot focuses on the significant predictor "Education" in the US financial model. An increasing trend shows that as the education level increases from < High Schook to Degree and above, the percentage of financial digital proxy increase as well, which means that the higher education level a person has, the higher the probability he might help with financial proxy.
 
 
 ## US Medical model
+
+### Siblings
+
+```{r}
+# Calculate the total number of individuals
+us_proxies <- test.data.us %>%
+  filter(MedicalDelegate1 == 1)
+us_not_proxies <- test.data.us %>%
+  filter(MedicalDelegate1 == 0)
+
+count <- aggregate(MedicalDelegate1 ~ Siblings, data = us_proxies, length)
+sum <- sum (table(us_proxies$Siblings))
+count$Proportion <- count$MedicalDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(MedicalDelegate1 ~ Siblings, data = us_not_proxies, length)
+sum_not <- sum (table(us_not_proxies$Siblings))
+count_not_proxies$Proportion <- count_not_proxies$MedicalDelegate1 / sum_not * 100
+
+count$Type <- 'Medical Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Siblings <- factor(count$Siblings, levels = c(1, 2, 3,4,5),labels = c("0","1","2","3",">4"))
+
+count_not_proxies$Siblings <- factor(count_not_proxies$Siblings, levels = c(1, 2, 3,4,5),labels = c("0","1","2","3",">4"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Siblings, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "lightgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Medical Proxies" = "blue", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Medical Delegation by Siblings",
+       x = "Siblings",
+       y = "Percentage of Medical Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+This plot focuses on the significant predictor "Siblings" in the US medical model. An increasing trend shows that more number of siblings a participant have, the percentage of medical digital proxy will be higher as well, which means higher the probability he might help with medical proxy. This is resonable because majority medical delegation occurs among relatives.
+
+
+### Ethnicity
+
+```{r}
+
+# Calculate the total number of individuals
+us_proxies <- test.data.us %>%
+  filter(MedicalDelegate1 == 1)
+us_not_proxies <- test.data.us %>%
+  filter(MedicalDelegate1 == 0)
+
+count <- aggregate(MedicalDelegate1 ~ Ethnicity, data = us_proxies, length)
+sum <- sum (table(us_proxies$Ethnicity))
+count$Proportion <- count$MedicalDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(MedicalDelegate1 ~ Ethnicity, data = us_not_proxies, length)
+sum_not <- sum (table(us_not_proxies$Ethnicity))
+count_not_proxies$Proportion <- count_not_proxies$MedicalDelegate1 / sum_not * 100
+
+count$Type <- 'Medical Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Ethnicity <- factor(count$Ethnicity, levels = c(11,2,1,5,8,9,10),labels = c("White", "Black", "Mixed", "Hispanic/Latino", "Asian","Native American", "Others"))
+
+count_not_proxies$Ethnicity <- factor(count_not_proxies$Ethnicity, levels = c(11,2,1,5,8,9,10),labels = c("White", "Black", "Mixed", "Hispanic/Latino", "Asian","Native American", "Others"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Ethnicity, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Medical Delegation by Ethnicity",
+       x = "Ethnicity",
+       y = "Percentage of Medical Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+
+This plot focuses on the significant predictor "Ethnicity" in the US medical model. A decreasing trend shows that participants with Ethnicity White will have higher the percentage of medical digital proxy, which means higher the probability he might help with medical proxy. 
+
+
+\newpage
+
+## SG Financial model
+
+### Age
+
+```{r}
+# Calculate the total number of individuals
+sg_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 1)
+sg_not_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 0)
+
+count <- aggregate(FinanceDelegate1 ~ Age, data = sg_proxies, length)
+sum <- sum (table(sg_proxies$Age))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Age, data = sg_not_proxies, length)
+sum_not <- sum (table(sg_not_proxies$Age))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
+
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Age <- factor(count$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+count_not_proxies$Age <- factor(count_not_proxies$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightblue", "Non-Proxies" = "lightgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Financial Proxies" = "blue", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Age",
+       x = "Age",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+This plot focuses on the significant predictor "age" in the SG financial model. A decreasing trend shows that as the age of participants increases from 21 to over 70, the percentage of financial digital proxy decrease as well, which means that the higher age a person has, the lower the probability he might help with financial proxy.
+
+
+### Income
+
+```{r}
+# Calculate the total number of individuals
+sg_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 1)
+sg_not_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 0)
+
+count <- aggregate(FinanceDelegate1 ~ Income, data = sg_proxies, length)
+sum <- sum (table(sg_proxies$Income))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Income, data = sg_not_proxies, length)
+sum_not <- sum (table(sg_not_proxies$Income))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
+
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Income <- factor(count$Income,levels = c("1","2","3","4","5","6"), labels = c("<30k", "30-39k", "50-99k", "100-149k", "150-199k", ">=200k"))
+
+count_not_proxies$Income <- factor(count_not_proxies$Income,levels = c("1","2","3","4","5","6"), labels = c("<30k", "30-39k", "50-99k", "100-149k", "150-199k", ">=200k"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Income, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightgreen", "Non-Proxies" = "darkgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Financial Proxies" = "lightgreen", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Income",
+       x = "Income",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+"1" = "<$30k", "2" = "$30k", "3" = "$50k", "4" = "$100k", "5" = "$150k", "6" = ">$200k"
+
+This plot focuses on the significant predictor "income" in the SG financial model. A decreasing trend shows that as annual household income increases from <$30k to >$200k, the percentage of financial digital proxy decrease as well, which means that the higher income a person has, the lower the probability he might help with financial proxy. (majority non-proxies $50k 30.7%, majority financial proxies $50k and $100k)
+
+
+\newpage
+
+### Gender
+
+```{r}
+# Calculate the total number of individuals
+sg_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 1)
+sg_not_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 0)
+
+count <- aggregate(FinanceDelegate1 ~ Gender, data = sg_proxies, length)
+sum <- sum (table(sg_proxies$Gender))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Gender, data = sg_not_proxies, length)
+sum_not <- sum (table(sg_not_proxies$Gender))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
+
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Gender <- factor(count$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+count_not_proxies$Gender <- factor(count_not_proxies$Gender, levels = c(1, 2), labels = c("Female","Male"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Gender, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightblue", "Non-Proxies" = "lightgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Financial Proxies" = "blue", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Gender",
+       x = "Gender",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+This plot focuses on the significant predictor "Gender" in the SG financial model. It shows that male participants have a higher percentage in financial proxy compared with female participants. (samilar result as US financial proxies)
+
+
+### Education
+
+```{r}
+# Calculate the total number of individuals
+sg_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 1)
+sg_not_proxies <- test.data.sg %>%
+  filter(FinanceDelegate1 == 0)
+
+count <- aggregate(FinanceDelegate1 ~ Education, data = sg_proxies, length)
+sum <- sum (table(sg_proxies$Education))
+count$Proportion <- count$FinanceDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(FinanceDelegate1 ~ Education, data = sg_not_proxies, length)
+sum_not <- sum (table(sg_not_proxies$Education))
+count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
+
+count$Type <- 'Financial Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Education <- factor(count$Education, levels = c(1, 2, 3),
+                                  labels = c("< High School", "High School", "Degree and above"))
+
+count_not_proxies$Education <- factor(count_not_proxies$Education, levels = c(1, 2, 3),
+                                  labels = c("< High School", "High School", "Degree and above"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Education, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Financial Proxies" = "lightgreen", "Non-Proxies" = "darkgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Financial Proxies" = "lightgreen", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Financial Delegation by Education",
+       x = "Education",
+       y = "Percentage of Financial Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+This plot focuses on the significant predictor "Education" in the SG financial model. An increasing trend shows that as the education level increases from < High Schook to Degree and above, the percentage of financial digital proxy increase as well, which means that the higher education level a person has, the higher the probability he might help with financial proxy. (compare to US financial model, no financial proxies < High School in SG, high school % lower than US, Degree and above % higher than US)
+
+
+## SG Medical model
+
+### Siblings
+
+```{r}
+# Calculate the total number of individuals
+sg_proxies <- test.data.sg %>%
+  filter(MedicalDelegate1 == 1)
+sg_not_proxies <- test.data.sg %>%
+  filter(MedicalDelegate1 == 0)
+
+count <- aggregate(MedicalDelegate1 ~ Siblings, data = sg_proxies, length)
+sum <- sum (table(sg_proxies$Siblings))
+count$Proportion <- count$MedicalDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(MedicalDelegate1 ~ Siblings, data = sg_not_proxies, length)
+sum_not <- sum (table(sg_not_proxies$Siblings))
+count_not_proxies$Proportion <- count_not_proxies$MedicalDelegate1 / sum_not * 100
+
+count$Type <- 'Medical Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Siblings <- factor(count$Siblings, levels = c(1, 2, 3,4,5),labels = c("0","1","2","3",">4"))
+
+count_not_proxies$Siblings <- factor(count_not_proxies$Siblings, levels = c(1, 2, 3,4,5),labels = c("0","1","2","3",">4"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Siblings, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Medical Delegation by Siblings",
+       x = "Siblings",
+       y = "Percentage of Medical Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+This plot focuses on the significant predictor "Siblings" in the SG medical model. Flat trend for Medical Proxies. Participants who have 1 or 2 siblings might have a higher probability in helping medical delegations. Participants who have more than 4 siblings have a higher probability of not helping medical delegation. (compared with US medical, percentage of medical delegation are around 20% for participants who have 1, 2, 3, or >4 siblings)
+
+
+### Ethnicity
+
+```{r}
+
+# Calculate the total number of individuals
+sg_proxies <- test.data.sg %>%
+  filter(MedicalDelegate1 == 1)
+sg_not_proxies <- test.data.sg %>%
+  filter(MedicalDelegate1 == 0)
+
+count <- aggregate(MedicalDelegate1 ~ Ethnicity, data = sg_proxies, length)
+sum <- sum (table(sg_proxies$Ethnicity))
+count$Proportion <- count$MedicalDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(MedicalDelegate1 ~ Ethnicity, data = sg_not_proxies, length)
+sum_not <- sum (table(sg_not_proxies$Ethnicity))
+count_not_proxies$Proportion <- count_not_proxies$MedicalDelegate1 / sum_not * 100
+
+count$Type <- 'Medical Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Ethnicity <- factor(count$Ethnicity, levels = c(1, 2),labels = c("Chinese","Underrepresented"))
+
+count_not_proxies$Ethnicity <- factor(count_not_proxies$Ethnicity, levels = c(1, 2),labels = c("Chinese","Underrepresented"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Ethnicity, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Medical Delegation by Ethnicity",
+       x = "Ethnicity",
+       y = "Percentage of Medical Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+```{r}
+# Calculate the total number of individuals
+sg_proxies <- test.data.sg %>%
+  filter(MedicalDelegate1 == 1)
+sg_not_proxies <- test.data.sg %>%
+  filter(MedicalDelegate1 == 0)
+
+count <- aggregate(MedicalDelegate1 ~ Ethnicity, data = sg_proxies, length)
+sum <- sum (table(sg_proxies$Ethnicity))
+count$Proportion <- count$MedicalDelegate1 / sum * 100
+
+count_not_proxies <- aggregate(MedicalDelegate1 ~ Ethnicity, data = sg_not_proxies, length)
+sum_not <- sum (table(sg_not_proxies$Ethnicity))
+count_not_proxies$Proportion <- count_not_proxies$MedicalDelegate1 / sum_not * 100
+
+count$Type <- 'Medical Proxies'
+count_not_proxies$Type <- 'Non-Proxies'
+
+# dataframe
+count$Ethnicity <- factor(count$Ethnicity, levels = c(3,4,7,6,8,10),labels = c("Chinese", "Eurasian", "Malay", "Indian", "Mixed", "Others"))
+
+count_not_proxies$Ethnicity <- factor(count_not_proxies$Ethnicity, levels = c(3,4,7,6,8,10),labels = c("Chinese", "Eurasian", "Malay", "Indian", "Mixed", "Others"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Ethnicity, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Medical Proxies" = "lightblue", "Non-Proxies" = "darkblue")) +  # colors for trend lines
+  theme_minimal() +
+  labs(title = "Medical Delegation by Ethnicity",
+       x = "Ethnicity",
+       y = "Percentage of Medical Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+```
+
+
+This plot focuses on the significant predictor "Ethnicity" in the SG medical model. A decreasing trend shows that participants with Ethnicity Chinese will have higher the percentage of medical digital proxy, which means higher the probability he might help with medical proxy. 
+
+
+\newpage
+
 
 ### Gender
 ```{r}
@@ -2181,6 +2704,18 @@ print(percentage_formal_both)
 percentage_informal_both<-(informal_both / sg_both_sum) * 100
 print(percentage_informal_both)
 
+# for participants who only do formal medical and informal financial
+sg_both <- test.data.sg %>%
+  filter(MedicalDelegate1 == 1 & FinanceDelegate1 == 1)
+sg_both_sum <- sum(as.integer(sg_both$MedicalDelegate1 == 1 & sg_both$FinanceDelegate1 == 1))
+
+formal_medical_informal_financial<-sum(as.integer(sg_both$MedicalDelegate2 == "Assist-formal" & sg_both$FinanceDelegate2 == "Assist-Informal"))
+formal_financial_informal_medical<-sum(as.integer(sg_both$MedicalDelegate2 == "Assist-informal" & sg_both$FinanceDelegate2 == "Assist-formal"))
+
+percentage_formal_medical_informal_financial<-(formal_medical_informal_financial / sg_both_sum) * 100
+print(percentage_formal_medical_informal_financial)
+percentage_formal_financial_informal_medical<-(formal_financial_informal_medical / sg_both_sum) * 100
+print(percentage_formal_financial_informal_medical)
 
 
 # for participants who only do medical delegates
@@ -2204,6 +2739,9 @@ percentage_formal<-(formal_finance/finance_assit) * 100
 print(percentage_formal)
 percentage_informal<-(informal_finance/finance_assit) * 100
 print(percentage_informal)
+
+
+
 
 ```
 
@@ -2231,67 +2769,2414 @@ N=34
 # digital_proxySG
 # Provides min, median, mean, max, and quartiles
 
-sg_not_both$Age <- factor(sg_not_both$Age, 
+sg_medical <- test.data.sg %>%
+  filter(MedicalDelegate1 == 1)
+
+sg_medical$Age <- factor(sg_medical$Age, 
                          levels = c("1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11"),
                          labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"), ordered = TRUE)
-sg_not_both$Age <- as.factor(as.character(sg_not_both$Age))
-# sg_not_both$Age <- as.numeric(sg_not_both$Age) ###
-# ordering <- c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70")
-# orderFactor <- factor(my.dat$Age, levels = ordering)
-# my.dat$Age <- as.numeric(orderFactor)
-prop.table(table(sg_not_both$Age)) * 100
-summary(sg_not_both$Age)
+sg_medical$Age <- as.factor(as.character(sg_medical$Age))
+prop.table(table(sg_medical$Age)) * 100
+summary(sg_medical$Age)
 
 # Percentage of each category in Education
-table(sg_not_both$Education)
-prop.table(table(sg_not_both$Education)) * 100  
+table(sg_medical$Education)
+prop.table(table(sg_medical$Education)) * 100  
 
 # Percentage of each category in Religion
-prop.table(table(sg_not_both$Religion)) * 100  
+prop.table(table(sg_medical$Religion)) * 100  
 
 # Percentage of each category in Ethnicity
-prop.table(table(sg_not_both$Ethnicity)) * 100
+prop.table(table(sg_medical$Ethnicity)) * 100
 prop.table(table(digital_proxySG$Ethnicity)) * 100 
 
 # summary of IADL
-summary(sg_not_both$IADL)
-sd(sg_not_both$IADL)
+summary(sg_medical$IADL)
+sd(sg_medical$IADL)
 
 # summary of ADL
-summary(sg_not_both$ADL)
-sd(sg_not_both$ADL)
+summary(sg_medical$ADL)
+sd(sg_medical$ADL)
 ```
 
-* Descriptive statistics for participants who only do medical delegates or financial delegates (significant predictors in SG model):
+* Descriptive statistics for participants who do medical delegates (significant predictors in SG model):
   + Age (categorical)
-    - 21-24 (9.523810%), 25-29 (7.142857%), 30-34 (6.666667%), 35-39 (8.571429%), 40-44 (7.142857%), 45-49 (10.952381%), 50-54 (10.476190%), 55-59 (19.523810%), 60-64 (15.238095%), 65-69 (3.333333%), 70 and above (1.428571%%)
-    - N = 210
+    - 21-24 (12.698413%), 25-29 (11.904762%), 30-34 (19.841270%), 35-39 (12.698413%), 40-44 (11.904762%), 45-49 (11.111111%), 50-54 (3.968254%), 55-59 (6.349206%), 60-64 (6.349206%), 65-69 (3.174603%), 70 and above (0%)
+    - N = 126
     
   + Education (ordinal)
-    - Percentage: < High School (3.333333%), High School (44.761905%), Degree and above (51.904762%)
-    - N = 210
+    - Percentage: < High School (2.380952%), High School (30.158730%), Degree and above (67.460317%)
+    - N = 126
     
   + Ethnicity (categorical) 
-    - Percentage: Majority (81.90476%), Underrepresented (18.09524%)
-    - N = 210
+    - Percentage: Majority (70.63492%), Underrepresented (29.36508%)
+    - N = 126
     - Percentage (Original Dataset): Chinese (78.4565916%), Eurasian (1.9292605%), Indian (4.8231511%), Malay (12.2186495%), Mixed (0.6430868%), Others (1.9292605%)
     - N = 311
     
   + IADL (numerical)
-    - mean: 0.4171
-    - median: 0.4200
-    - Interquartile Range (IQR): 1st Qu. 0.1700, 3rd Qu. 0.6700
-    - standard deviation: 0.2887436
+    - mean: 0.6588
+    - median: 0.7100
+    - Interquartile Range (IQR): 1st Qu. 0.5100, 3rd Qu. 0.8300
+    - standard deviation: 0.2324258
     
   + ADL (numerical)
-    - mean: 0.2302
-    - median: 0.0000
-    - Interquartile Range (IQR): 1st Qu. 0.0000, 3rd Qu. 0.4200
-    - standard deviation: 0.3263008
+    - mean: 0.5019
+    - median: 0.5200
+    - Interquartile Range (IQR): 1st Qu. 0.0800, 3rd Qu. 0.8300
+    - standard deviation: 0.3649498
     
   + Religion(categorical)
-    - Percentage: Buddhist (33.333333%), Catholicism (3.333333%), Christianity (20.952381%), Hinduism (3.333333%), Islam (12.380952%), No Religion (21.904762%), Taoism (4.761905%)
-    - N = 210
-    - A total of 210 participants
+    - Percentage: Buddhist (35.714286%), Catholicism (6.349206%), Christianity (15.873016%), Hinduism (3.174603%), Islam (20.634921%), No Religion (15.873016%), Taoism (2.380952%)
+    - N = 126
+    - A total of 126 participants
+    
+
+
+```{r}
+# digital_proxySG
+# Provides min, median, mean, max, and quartiles
+
+sg_financial <- test.data.sg %>%
+  filter(FinanceDelegate1 == 1)
+
+# Age
+sg_financial$Age <- factor(sg_financial$Age, 
+                         levels = c("1","2", "3", "4", "5", "6", "7", "8", "9", "10", "11"),
+                         labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"), ordered = TRUE)
+sg_financial$Age <- as.factor(as.character(sg_financial$Age))
+prop.table(table(sg_financial$Age)) * 100
+summary(sg_financial$Age)
+
+# Percentage of each category in Income
+sg_financial$Income <- factor(sg_financial$Income, 
+                         levels = c("1","2", "3", "4", "5", "6"),
+                         labels = c("<$30k", "$30k", "$50k", "$100k", "$150k", ">$200k"), ordered = TRUE)
+sg_financial$Income <- as.factor(as.character(sg_financial$Income))
+table(sg_financial$Income)
+prop.table(table(sg_financial$Income)) * 100  
+
+# Percentage of each category in Housing
+sg_financial$Housing <- factor(sg_financial$Housing, 
+                         levels = c("1","2", "3"),
+                         labels = c("low-income housing", "apartment", "familyhouse"), ordered = TRUE)
+sg_financial$Housing <- as.factor(as.character(sg_financial$Housing))
+table(sg_financial$Housing)
+prop.table(table(sg_financial$Housing)) * 100  
+
+# Percentage of each category in Ethnicity
+prop.table(table(sg_financial$Ethnicity)) * 100
+prop.table(table(digital_proxySG$Ethnicity)) * 100 
+
+# Percentage of each category in Marital
+table(sg_financial$Marital)
+prop.table(table(sg_financial$Marital)) * 100  
+
+# summary of IADL
+summary(sg_financial$IADL)
+sd(sg_financial$IADL)
+
+# summary of ADL
+summary(sg_financial$ADL)
+sd(sg_financial$ADL)
+```
+
+For SG participants who do finanical delegates: (128/304) 
+
+  + Age (categorical)
+    - 21-24 (13.28125%), 25-29 (14.06250%), 30-34 (21.09375%), 35-39 (14.06250%), 40-44 (10.15625%), 45-49 (7.81250%), 50-54 (3.90625%), 55-59 (7.03125%), 60-64 (5.46875%), 65-69 (3.12500%), 70 and above (0%)
+    - N = 128
+    
+  + Income (ordinal)
+    - Percentage: < 30k (14.06250%), 30k (15.62500%), 50k (25.78125%), 100k (25.78125%), 150k (10.93750%) >200k (7.81250%)
+    - N = 128
+    
+  + Housing (ordinal)
+    - Percentage: apartment (76.56250%), familyhouse (21.09375%), low-income housing (2.34375%)
+    - N = 128
+    
+  + Ethnicity (categorical) 
+    - Percentage: Majority (73.4375%), Underrepresented (26.5625%)
+    - N = 128
+    - Percentage (Original Dataset): Chinese (78.4565916%), Eurasian (1.9292605%), Indian (4.8231511%), Malay (12.2186495%), Mixed (0.6430868%), Others (1.9292605%)
+    - N = 311
+    
+  + Marital (categorical) 
+    - Percentage: Once Married (5.46875%), Unmarried (41.40625%), Married (53.12500%)
+    - N = 128
+    
+  + IADL (numerical)
+    - mean: 0.6659
+    - median: 0.7100
+    - Interquartile Range (IQR): 1st Qu. 0.5000, 3rd Qu. 0.7900
+    - standard deviation: 0.2157847
+    
+  + ADL (numerical)
+    - mean: 0.5045
+    - median: 0.5200
+    - Interquartile Range (IQR): 1st Qu. 0.1200, 3rd Qu. 0.8300
+    - standard deviation: 0.3612943
+    
+
+```{r}
+# financial delegation
+us_financial_no <- test.data.us %>%
+  filter(FinanceDelegate2 == "No")
+us_financial_informal <- test.data.us %>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+us_financial_formal <- test.data.us %>%
+  filter(FinanceDelegate2 == "Assist-formal")
+
+sg_financial_no <- test.data.sg %>%
+  filter(FinanceDelegate2 == "No")
+sg_financial_informal <- test.data.sg %>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+sg_financial_formal <- test.data.sg %>%
+  filter(FinanceDelegate2 == "Assist-formal")
+```
+
+
+```{r}
+# medical delegation
+us_medical_no <- test.data.us %>%
+  filter(MedicalDelegate2 == "No")
+us_medical_informal <- test.data.us %>%
+  filter(MedicalDelegate2 == "Assist-informal")
+us_medical_formal <- test.data.us %>%
+  filter(MedicalDelegate2 == "Assist-formal")
+
+sg_medical_no <- test.data.sg %>%
+  filter(MedicalDelegate2 == "No")
+sg_medical_informal <- test.data.sg %>%
+  filter(MedicalDelegate2 == "Assist-informal")
+sg_medical_formal <- test.data.sg %>%
+  filter(MedicalDelegate2 == "Assist-formal")
+```
+
+```{r,warning=FALSE}
+Age<-as.numeric(test.data.sg$Age)
+Housing<-as.numeric(test.data.sg$Housing)
+Income<-as.numeric(test.data.sg$Income)
+Gender<-as.numeric(test.data.sg$Gender)
+Education<-as.numeric(test.data.sg$Education)
+Employment<-as.numeric(test.data.sg$Employment)
+Siblings<-as.numeric(test.data.sg$Siblings)
+Ethnicity<-as.numeric(test.data.sg$Ethnicity)
+Marital<-as.numeric(test.data.sg$Marital)
+ADL<-as.numeric(test.data.sg$ADL)
+IADL<-as.numeric(test.data.sg$IADL)
+
+# compute the correlation matrix with correlation value
+ratings <- data.frame(Age,Housing,Income,Gender,Education,Employment,Siblings,Ethnicity,Marital,ADL,IADL)
+correlation_ratings<-cor(ratings)
+
+#corrplot(correlation_ratings, method = "col",tl.col =4)
+
+#number
+corrplot(correlation_ratings, method = "number",tl.col =4)
+```
+
+
+```{r}
+long_data <- test.data.us %>%
+  pivot_longer(cols = c(FinanceDelegate1, MedicalDelegate1), 
+               names_to = "Type", 
+               values_to = "Delegate", 
+               values_drop_na = TRUE) %>%
+  filter(Delegate == 1) %>%
+  select(-Delegate)
+
+# Create the boxplot
+p <- ggplot(long_data, aes(x = Type, y = IADL)) +
+  geom_boxplot() +
+  theme_minimal() +
+  xlab("Types of Digital Proxies") +
+  ylab("IADL") +
+  scale_x_discrete(labels = c("FinanceDelegate1" = "Finance", "MedicalDelegate1" = "Medical"))+
+  coord_flip()
+
+# Print the plot
+print(p)
+```
+
+# US boxplot about IADL
+```{r}
+# long format data
+long_data <- test.data.us %>%
+  pivot_longer(cols = c(FinanceDelegate1, MedicalDelegate1), 
+               names_to = "Type", 
+               values_to = "Delegate", 
+               values_drop_na = TRUE) %>%
+  filter(Delegate == 1) %>%
+  select(-Delegate)
+
+# Calculate the IQR for each type
+iqr_values <- long_data %>%
+  group_by(Type) %>%
+  summarise(
+    Q1 = quantile(IADL, 0.25),
+    Q3 = quantile(IADL, 0.75),
+    IQR = Q3 - Q1
+  ) %>%
+  ungroup()
+
+# Define a function to identify outliers
+is_outlier <- function(IADL, type) {
+  iqr_row <- iqr_values %>% filter(Type == type)
+  lower_bound <- iqr_row$Q1 - 1.5 * iqr_row$IQR
+  upper_bound <- iqr_row$Q3 + 1.5 * iqr_row$IQR
+  return(IADL < lower_bound | IADL > upper_bound)
+}
+
+# Add a column to identify outliers
+long_data <- long_data %>%
+  mutate(Outlier = purrr::pmap_lgl(list(IADL, Type), ~is_outlier(..1, ..2)))
+
+# Create the boxplot
+p <- ggplot(long_data, aes(x = Type, y = IADL)) +
+  geom_boxplot() +
+  geom_text(
+    aes(label = ifelse(Outlier, as.character(IADL), "")),
+    position = position_dodge(width = 0.25), hjust = -0.3, vjust = 0,size=2
+  ) +
+  theme_minimal() +
+  xlab("Types of Digital Proxies") +
+  ylab("IADL") +
+  scale_x_discrete(labels = c("FinanceDelegate1" = "Finance", "MedicalDelegate1" = "Medical")) +
+  coord_flip()  # Flip the axes to make the plot horizontal
+
+# Print the plot
+print(p)
+
+```
+
+# SG boxplot about IADL
+```{r}
+# long format for data
+long_data <- test.data.sg %>%
+  pivot_longer(cols = c(FinanceDelegate1, MedicalDelegate1), 
+               names_to = "Type", 
+               values_to = "Delegate", 
+               values_drop_na = TRUE) %>%
+  filter(Delegate == 1) %>%
+  select(-Delegate)
+
+
+# Calculate the IQR for each type
+iqr_values <- long_data %>%
+  group_by(Type) %>%
+  summarise(
+    Q1 = quantile(IADL, 0.25),
+    Q3 = quantile(IADL, 0.75),
+    IQR = Q3 - Q1
+  ) %>%
+  ungroup()
+
+# Define a function to identify outliers
+is_outlier <- function(IADL, type) {
+  iqr_row <- iqr_values %>% filter(Type == type)
+  lower_bound <- iqr_row$Q1 - 1.5 * iqr_row$IQR
+  upper_bound <- iqr_row$Q3 + 1.5 * iqr_row$IQR
+  return(IADL < lower_bound | IADL > upper_bound)
+}
+
+# Add a column to identify outliers
+long_data <- long_data %>%
+  mutate(Outlier = purrr::pmap_lgl(list(IADL, Type), ~is_outlier(..1, ..2)))
+
+# Create the boxplot
+p <- ggplot(long_data, aes(x = Type, y = IADL)) +
+  geom_boxplot() +
+  geom_text(
+    aes(label = ifelse(Outlier, as.character(IADL), "")),
+    position = position_dodge(width = 0.25), hjust = -0.3, vjust = 0,size=2
+  ) +
+  theme_minimal() +
+  xlab("Types of Digital Proxies") +
+  ylab("IADL") +
+  scale_x_discrete(labels = c("FinanceDelegate1" = "Finance", "MedicalDelegate1" = "Medical")) +
+  coord_flip()  # Flip the axes to make the plot horizontal
+
+# Print the plot
+print(p)
+
+```
+
+# US boxplot about ADL
+
+```{r}
+
+# long format data
+long_data <- test.data.us %>%
+  pivot_longer(cols = c(FinanceDelegate1, MedicalDelegate1), 
+               names_to = "Type", 
+               values_to = "Delegate", 
+               values_drop_na = TRUE) %>%
+  filter(Delegate == 1) %>%
+  select(-Delegate)
+
+# Calculate the IQR for each type
+iqr_values <- long_data %>%
+  group_by(Type) %>%
+  summarise(
+    Q1 = quantile(ADL, 0.25),
+    Q3 = quantile(ADL, 0.75),
+    IQR = IQR(ADL)
+  ) %>%
+  ungroup()
+
+# Define a function to identify outliers
+is_outlier <- function(ADL, type) {
+  iqr_row <- iqr_values %>% filter(Type == type)
+  lower_bound <- iqr_row$Q1 - 1.5 * iqr_row$IQR
+  upper_bound <- iqr_row$Q3 + 1.5 * iqr_row$IQR
+  ADL < lower_bound | ADL > upper_bound
+}
+
+# Add a column to identify outliers for each row
+long_data <- long_data %>%
+  mutate(Outlier = mapply(is_outlier, ADL, Type))
+
+# Create the boxplot
+p <- ggplot(long_data, aes(x = Type, y = ADL)) +
+  geom_boxplot() +
+  geom_text(
+    aes(label = ifelse(Outlier, as.character(ADL), "")),
+    position = position_dodge(width = 0.25), hjust = -0.3, vjust = 0, size = 2
+  ) +
+  theme_minimal() +
+  xlab("Types of Digital Proxies") +
+  ylab("ADL") +
+  scale_x_discrete(labels = c("FinanceDelegate1" = "Finance", "MedicalDelegate1" = "Medical")) +
+  coord_flip()  # Flip the axes to make the plot horizontal
+
+# Print the plot
+print(p)
+
+```
+
+# SG boxplot about ADL
+
+```{r}
+
+# long format data
+long_data <- test.data.sg %>%
+  pivot_longer(cols = c(FinanceDelegate1, MedicalDelegate1), 
+               names_to = "Type", 
+               values_to = "Delegate", 
+               values_drop_na = TRUE) %>%
+  filter(Delegate == 1) %>%
+  select(-Delegate)
+
+# Calculate the IQR for each type
+iqr_values <- long_data %>%
+  group_by(Type) %>%
+  summarise(
+    Q1 = quantile(ADL, 0.25),
+    Q3 = quantile(ADL, 0.75),
+    IQR = IQR(ADL)
+  ) %>%
+  ungroup()
+
+# Define a function to identify outliers
+is_outlier <- function(ADL, type) {
+  iqr_row <- iqr_values %>% filter(Type == type)
+  lower_bound <- iqr_row$Q1 - 1.5 * iqr_row$IQR
+  upper_bound <- iqr_row$Q3 + 1.5 * iqr_row$IQR
+  ADL < lower_bound | ADL > upper_bound
+}
+
+# Add a column to identify outliers for each row
+long_data <- long_data %>%
+  mutate(Outlier = mapply(is_outlier, ADL, Type))
+
+# Create the boxplot
+p <- ggplot(long_data, aes(x = Type, y = ADL)) +
+  geom_boxplot() +
+  geom_text(
+    aes(label = ifelse(Outlier, as.character(ADL), "")),
+    position = position_dodge(width = 0.25), hjust = -0.3, vjust = 0, size = 2
+  ) +
+  theme_minimal() +
+  xlab("Types of Digital Proxies") +
+  ylab("ADL") +
+  scale_x_discrete(labels = c("FinanceDelegate1" = "Finance", "MedicalDelegate1" = "Medical")) +
+  coord_flip()  # Flip the axes to make the plot horizontal
+
+# Print the plot
+print(p)
+
+```
+
+```{r}
+test.data.us = us_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','HelpImmediateFam','HelpRelatives','HelpFriends','FinanceHelpImmediateFam','FinanceHelpRelatives','FinanceHelpFriends','MedicalHelpImmediateFam','MedicalHelpRelatives','MedicalHelpFriends','MedicalDelegate1','MedicalDelegate2','FinanceDelegate1','FinanceDelegate2')]
+test.data.sg = sg_filtered_data[,c('Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','HelpImmediateFam','HelpRelatives','HelpFriends','FinanceHelpImmediateFam','FinanceHelpRelatives','FinanceHelpFriends','MedicalHelpImmediateFam','MedicalHelpRelatives','MedicalHelpFriends','MedicalDelegate1','MedicalDelegate2','FinanceDelegate1','FinanceDelegate2')]
+```
+
+
+# Figure 2
+
+With respect to the inquiry on Figure 2 of the paper, 320 out of 657 refers the the UNIQUE digital delegates. Meaning, they are in one of the categories (1) did both finance digital delegation, (2) did ONLY finance digital delegation, and (3) did ONLY medical digital delegation. You will need to script this out and make sure that you are not double counting participants.
+
+```{r}
+# US (320)
+# (1) did both finance and medical digital delegation
+us_both <- test.data.us %>%
+  filter(MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist")
+# (2) did ONLY finance digital delegation
+us_finance <- test.data.us %>%
+  filter(MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist")
+# (3) did ONLY medical digital delegation
+us_medical <- test.data.us %>%
+  filter(MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")
+unique_proxy_us<-nrow(us_both)+nrow(us_finance)+nrow(us_medical)
+unique_proxy_us
+```
+
+```{r}
+# SG(94+34+32=160)
+# (1) did both finance and medical digital delegation
+sg_both <- test.data.sg %>%
+  filter(MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist")
+# (2) did ONLY finance digital delegation
+sg_finance <- test.data.sg %>%
+  filter(MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist")
+# (3) did ONLY medical digital delegation
+sg_medical <- test.data.sg %>%
+  filter(MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")
+unique_proxy_sg<-nrow(sg_both)+nrow(sg_finance)+nrow(sg_medical)
+unique_proxy_sg
+```
+
+```{r}
+test.data.us <- subset(test.data.us, !(HelpFriends=="101"))
+test.data.us <- subset(test.data.us, !(FinanceHelpFriends=="101"))
+test.data.us <- subset(test.data.us, !(MedicalHelpImmediateFam=="101"))
+test.data.us <- subset(test.data.us, !(MedicalHelpFriends=="101"))
+
+test.data.us <- subset(test.data.us, !(HelpFriends=="31"))
+test.data.us <- subset(test.data.us, !(FinanceHelpFriends=="31"))
+test.data.us <- subset(test.data.us, !(MedicalHelpImmediateFam=="31"))
+test.data.us <- subset(test.data.us, !(MedicalHelpFriends=="31"))
+test.data.us <- subset(test.data.us, !(Marital=="3"))
+filtered_data_us <- test.data.us %>%
+  filter(
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist") |  # Both
+    (MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist") |      # Only finance
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")        # Only medical
+  )
+```
+
+# Figure 2
+## US
+```{r}
+filtered_data_us <- test.data.us %>%
+  filter(
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist") |  # Both
+    (MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist") |      # Only finance
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")        # Only medical
+  )
+# Calculate the total number of respondents for each help category
+total_respondents <- test.data.us %>%
+  summarise(
+    Family = sum(HelpImmediateFam > 0),
+    Relatives = sum(HelpRelatives > 0),
+    Friends = sum(HelpFriends > 0)
+  ) %>%
+  mutate(Category = "Total Respondents")
+
+# Calculate the total number of digital proxies for each finance help category
+total_proxies <- filtered_data_us %>%
+  summarise(
+    Family = sum(FinanceHelpImmediateFam > 0 | MedicalHelpImmediateFam > 0 | HelpImmediateFam > 0),
+    Relatives = sum(FinanceHelpRelatives > 0 | MedicalHelpRelatives > 0 | HelpRelatives > 0),
+    Friends = sum(FinanceHelpFriends > 0 | MedicalHelpFriends >0 | HelpFriends > 0)
+  ) %>%
+  mutate(Category = "Digital Proxies")
+
+# Combine the two summaries into one data frame for plotting
+total_data <- bind_rows(total_proxies,total_respondents) %>%
+  pivot_longer(cols = -Category, names_to = "Relationship", values_to = "Count")
+total_data$Category <- factor(total_data$Category, levels = c("Total Respondents", "Digital Proxies"))
+
+
+# Plot the data
+ggplot(total_data, aes(x = Relationship, y = Count, fill = Category)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = Count), vjust = -0.3, position = position_dodge(0.9)) +
+  scale_fill_manual(values = c("Total Respondents" = "grey30", "Digital Proxies" = "grey80")) +
+  theme_minimal() +
+  labs(x = "Relationship type of assisted adults", y = "Number of Respondents", fill = "Category") +
+  scale_x_discrete(labels = c("Family", "Relatives", "Friends"))
+
+
+```
+
+```{r}
+filtered_data_us <- test.data.us %>%
+  filter(
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist") |  # Both
+    (MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist") |      # Only finance
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")        # Only medical
+  )
+# Calculate the total number of respondents for each help category
+total_respondents <- test.data.us %>%
+  summarise(
+    Family = sum(HelpImmediateFam > 0),
+    Relatives = sum(HelpRelatives > 0),
+    Friends = sum(HelpFriends > 0)
+  ) %>%
+  mutate(Category = "Total Respondents")
+
+# Calculate the total number of digital proxies for each help category
+total_proxies <- filtered_data_us %>%
+  summarise(
+    Family = sum(HelpImmediateFam > 0),
+    Relatives = sum(HelpRelatives > 0),
+    Friends = sum(HelpFriends > 0)
+  ) %>%
+  mutate(Category = "Digital Proxies")
+
+# Combine the two summaries into one data frame for plotting
+total_data <- bind_rows(total_proxies,total_respondents) %>%
+  pivot_longer(cols = -Category, names_to = "Relationship", values_to = "Count")
+total_data$Category <- factor(total_data$Category, levels = c("Total Respondents", "Digital Proxies"))
+
+
+# Plot the data
+ggplot(total_data, aes(x = Relationship, y = Count, fill = Category)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = Count), vjust = -0.3, position = position_dodge(0.9)) +
+  scale_fill_manual(values = c("Total Respondents" = "grey30", "Digital Proxies" = "grey80")) +
+  theme_minimal() +
+  labs(x = "Relationship type of assisted adults", y = "Number of Respondents", fill = "Category") +
+  scale_x_discrete(labels = c("Family", "Relatives", "Friends"))
+
+
+```
+
+
+```{r}
+filtered_data_sg <- test.data.sg %>%
+  filter(
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist") |  # Both
+    (MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist") |      # Only finance
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")        # Only medical
+  )
+# Calculate the total number of respondents for each help category
+total_respondents <- test.data.sg %>%
+  summarise(
+    Family = sum(HelpImmediateFam > 0),
+    Relatives = sum(HelpRelatives > 0),
+    Friends = sum(HelpFriends > 0)
+  ) %>%
+  mutate(Category = "Total Respondents")
+
+# Calculate the total number of digital proxies for each finance help category
+total_proxies <- filtered_data_sg %>%
+  summarise(
+    Family = sum(FinanceHelpImmediateFam > 0),
+    Relatives = sum(FinanceHelpRelatives > 0),
+    Friends = sum(FinanceHelpFriends > 0)
+  ) %>%
+  mutate(Category = "Digital Proxies")
+
+# Combine the two summaries into one data frame for plotting
+total_data <- bind_rows(total_respondents,total_proxies) %>%
+  pivot_longer(cols = -Category, names_to = "Relationship", values_to = "Count")
+total_data$Category <- factor(total_data$Category, levels = c("Total Respondents", "Digital Proxies"))
+
+# Plot the data
+ggplot(total_data, aes(x = Relationship, y = Count, fill = Category)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = Count), vjust = -0.3, position = position_dodge(0.9)) +
+  scale_fill_manual(values = c("Total Respondents" = "grey30", "Digital Proxies" = "grey80")) +
+  theme_minimal() +
+  labs(x = "Relationship type of assisted adults", y = "Number of Respondents", fill = "Category") +
+  scale_x_discrete(labels = c("Family", "Relatives", "Friends"))
+
+```
+
+```{r}
+filtered_data_sg <- test.data.sg %>%
+  filter(
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist") |  # Both
+    (MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist") |      # Only finance
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")        # Only medical
+  )
+# Calculate the total number of respondents for each help category
+total_respondents <- test.data.sg %>%
+  summarise(
+    Family = sum(HelpImmediateFam > 0),
+    Relatives = sum(HelpRelatives > 0),
+    Friends = sum(HelpFriends > 0)
+  ) %>%
+  mutate(Category = "Total Respondents")
+
+# Calculate the total number of digital proxies for each help category
+total_proxies <- filtered_data_sg %>%
+  summarise(
+    Family = sum(HelpImmediateFam > 0),
+    Relatives = sum(HelpRelatives > 0),
+    Friends = sum(HelpFriends > 0)
+  ) %>%
+  mutate(Category = "Digital Proxies")
+
+# Combine the two summaries into one data frame for plotting
+total_data <- bind_rows(total_proxies,total_respondents) %>%
+  pivot_longer(cols = -Category, names_to = "Relationship", values_to = "Count")
+total_data$Category <- factor(total_data$Category, levels = c("Total Respondents", "Digital Proxies"))
+
+
+# Plot the data
+ggplot(total_data, aes(x = Relationship, y = Count, fill = Category)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = Count), vjust = -0.3, position = position_dodge(0.9)) +
+  scale_fill_manual(values = c("Total Respondents" = "grey30", "Digital Proxies" = "grey80")) +
+  theme_minimal() +
+  labs(x = "Relationship type of assisted adults", y = "Number of Respondents", fill = "Category") +
+  scale_x_discrete(labels = c("Family", "Relatives", "Friends"))
+
+
+```
+
+
+
+```{r}
+# MedicalDelegate1 == 1 & 
+# us_finance <- test.data.us %>%
+#   filter(FinanceDelegate1 == 1)
+# 
+# us_medical <- test.data.us %>%
+#   filter(MedicalDelegate1 == 1)
+# 
+# us_both <- test.data.us %>%
+#   filter(MedicalDelegate1 == 1 & FinanceDelegate1 == 1)
+# 
+# us_medical <- test.data.us %>%
+#   filter(MedicalDelegate2 == "Assist-formal")
+# 
+# us_finance <- test.data.us %>%
+#   filter(FinanceDelegate2 == "Assist-formal")
+# 
+# us_both <- test.data.us %>%
+#   filter(FinanceDelegate2 == "Assist-formal" & MedicalDelegate2 == "Assist-formal")
+# 
+# us_both <- my.dat %>%
+#   filter(FinanceDigitalAssistance == 1 & DigitalAssistMedical ==1)
+# 
+# us_both <- my.dat %>%
+#   filter(FinanceDigitalAssistance == 1)
+# 
+# us_both <- my.dat %>%
+#   filter(DigitalAssistMedical == 1)
+
+# FinanceDigitalAssistance
+```
+
+
+\newpage
+
+## Plot for Age and Gender
+
+### US
+```{r}
+filtered_data_us <- test.data.us %>%
+  filter(
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist") |  # Both
+    (MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist") |      # Only finance
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")        # Only medical
+  )
+# Calculate the total number of individuals
+gender_female <- filtered_data_us %>%
+  filter(Gender == 1)
+gender_male <- filtered_data_us %>%
+  filter(Gender == 2)
+# levels = c(1, 2), labels = c("Female","Male")
+count <- aggregate(Gender ~ Age, data = gender_female, length)
+sum <- sum (table(gender_female$Age))
+count$Proportion <- count$Gender / sum * 100
+
+count_not_proxies <- aggregate(Gender ~ Age, data = gender_male, length)
+sum_not <- sum (table(gender_male$Age))
+count_not_proxies$Proportion <- count_not_proxies$Gender / sum_not * 100
+
+count$Type <- 'Female'
+count_not_proxies$Type <- 'Male'
+
+# dataframe
+count$Age <- factor(count$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21-24","25-29", "30-24", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", ">=70"))
+
+count_not_proxies$Age <- factor(count_not_proxies$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21-24","25-29", "30-24", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", ">=70"))
+
+count$Gender <- factor(count$Gender,levels = c(1, 2),
+                           labels = c("Female","Male"))
+
+count_not_proxies$Gender <- factor(count_not_proxies$Gender,levels = c(1, 2),
+                           labels = c("Female","Male"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Female" = "darkgrey", "Male" = "lightgrey")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, size = 1) +  # change linetype to solid
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Female" = "red", "Male" = "blue")) +  # colors for solid lines
+  theme_minimal() +
+  labs(title = "Digital Delegation by Age",
+       x = "Age",
+       y = "Percentage of Unique Digital Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+
+```
+
+### SG
+```{r}
+filtered_data_sg <- test.data.sg %>%
+  filter(
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "Assist") |  # Both
+    (MedicalDelegate1 == "No" & FinanceDelegate1 == "Assist") |      # Only finance
+    (MedicalDelegate1 == "Assist" & FinanceDelegate1 == "No")        # Only medical
+  )
+# Calculate the total number of individuals
+gender_female <- filtered_data_sg %>%
+  filter(Gender == 1)
+gender_male <- filtered_data_sg %>%
+  filter(Gender == 2)
+# levels = c(1, 2), labels = c("Female","Male")
+count <- aggregate(Gender ~ Age, data = gender_female, length)
+sum <- sum (table(gender_female$Age))
+count$Proportion <- count$Gender / sum * 100
+
+count_not_proxies <- aggregate(Gender ~ Age, data = gender_male, length)
+sum_not <- sum (table(gender_male$Age))
+count_not_proxies$Proportion <- count_not_proxies$Gender / sum_not * 100
+
+count$Type <- 'Female'
+count_not_proxies$Type <- 'Male'
+
+# dataframe
+count$Age <- factor(count$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21-24","25-29", "30-24", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", ">=70"))
+
+count_not_proxies$Age <- factor(count_not_proxies$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21-24","25-29", "30-24", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", ">=70"))
+
+count$Gender <- factor(count$Gender,levels = c(1, 2),
+                           labels = c("Female","Male"))
+
+count_not_proxies$Gender <- factor(count_not_proxies$Gender,levels = c(1, 2),
+                           labels = c("Female","Male"))
+
+combined_data <- rbind(count,count_not_proxies)
+
+p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Female" = "darkgrey", "Male" = "lightgrey")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, size = 1) +  # change linetype to solid
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Female" = "red", "Male" = "blue")) +  # colors for solid lines
+  theme_minimal() +
+  labs(title = "Digital Delegation by Age",
+       x = "Age",
+       y = "Percentage of Unique Digital Delegation") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+
+```
+
+
+This plot focuses on the significant predictor "age" in the US financial model. A decreasing trend shows that as the age of participants increases from 21 to over 70, the percentage of financial digital proxy decrease as well, which means that the higher age a person has, the lower the probability he might help with financial proxy.
+
+
+\newpage
+
+# Section 5: Result
+
+
+# Q5.18 (FinanceManageReasons) (cleanded_data1) (US)
+```{r}
+# Create test dataframe with only demographic predictors
+test.data.us = us_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2')]
+```
+
+```{r}
+raw_digital_proxy<- mutate(test.data.us,
+                       FinanceManageReasons_new = recode(FinanceManageReasons,
+                       "The app was not user-friendly for them" = "notUserFriendly",
+                       "They see using the app as a difficult task that should be avoided" = "taskDifficulty",
+                       "They have concerns about sharing their data with third parties" = "thirdPartyConcerns",
+                       "They are unfamiliar with using a technology device to access the app" = "lackAppFamiliarity",
+                       "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app" = "physicalLimitation",
+                       "They do not have a device or equipment to access their digital accounts" = "noDeviceAccess",
+                       "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app" = "cognitiveLimiation",
+                       "Others (please specify)" = "others",
+                       .default = FinanceManageReasons
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceManageReasons,raw_digital_proxy$FinanceManageReasons_new)
+```
+
+```{r}
+library(stringr)
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data1 <- data.frame(
+  ID = 1:657,
+  Response = raw_digital_proxy$FinanceManageReasons_new
+)
+
+cleaned_data1 <- survey_data1 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), "Yes", "No"),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), "Yes", "No"),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), "Yes", "No"),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), "Yes", "No"),
+    physical_limitations = ifelse(Response == "physicalLimitation", "Yes", "No"),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", "Yes", "No"),
+    no_device = ifelse(Response == "noDeviceAccess", "Yes", "No"),
+    Others = ifelse(Response == "others", "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data1<- mutate(cleaned_data1,
+                       Response = recode(Response,
+                                         "The app was not user-friendly for them" = "notUserFriendly",
+                                         "They see using the app as a difficult task that should be avoided" = "taskDifficulty",
+                                         "They have concerns about sharing their data with third parties" = "thirdPartyConcerns",
+                                         "They are unfamiliar with using a technology device to access the app" = "lackAppFamiliarity",
+                                         "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app" = "physicalLimitation",
+                                         "They do not have a device or equipment to access their digital accounts" = "noDeviceAccess",
+                                         "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app" = "cognitiveLimiation",
+                                         "Others (please specify)" = "others",
+                                         .default = Response
+                       ))
+cleaned_data1 <- cleaned_data1 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), 1, 0),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), 1, 0),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), 1, 0),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), 1, 0),
+    physical_limitations = ifelse(Response == "physicalLimitation", 1, 0),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", 1, 0),
+    no_device = ifelse(Response == "noDeviceAccess", 1, 0),
+    Others = ifelse(Response == "others", 1, 0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data1)
+```
+
+
+## Q6.37 (DigitalAssistReasons) (cleaned_data4) (US)
+```{r}
+# raw_digital_proxy$DigitalAssistReasons
+raw_digital_proxy<- mutate(test.data.us,
+                       DigitalAssistReasons_new = recode(DigitalAssistReasons,
+                      "The app was not user-friendly for them" = "notUserFriendly",
+                       "They see using the app as a difficult task that should be avoided." = "taskDifficulty",
+                       "They have concerns about sharing their data with third parties." = "thirdPartyConcerns",
+                       "They are unfamiliar with using a technology device to access the app." = "lackAppFamiliarity",
+                       "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app." = "physicalLimitation",
+                       "They do not have a device or equipment to access their digital accounts." = "noDeviceAccess",
+                       "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app." = "cognitiveLimiation",
+                       "Others (Please Specify)" = "others",
+                       .default = DigitalAssistReasons
+                       ))
+DigitalAssistReasons_data<-data.frame(raw_digital_proxy$DigitalAssistReasons,raw_digital_proxy$DigitalAssistReasons_new)
+```
+
+```{r}
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data4 <- data.frame(
+  ID = 1:657,
+  Response = raw_digital_proxy$DigitalAssistReasons_new
+)
+
+cleaned_data4 <- survey_data4 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), "Yes", "No"),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), "Yes", "No"),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), "Yes", "No"),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), "Yes", "No"),
+    physical_limitations = ifelse(Response == "physicalLimitation", "Yes", "No"),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", "Yes", "No"),
+    no_device = ifelse(Response == "noDeviceAccess", "Yes", "No"),
+    Others = ifelse(Response == "others", "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data4<- mutate(cleaned_data4,
+                       Response = recode(Response,
+                                        "The app was not user-friendly for them" = "notUserFriendly",
+                                         "They see using the app as a difficult task that should be avoided." = "taskDifficulty",
+                                         "They have concerns about sharing their data with third parties." = "thirdPartyConcerns",
+                                         "They are unfamiliar with using a technology device to access the app." = "lackAppFamiliarity",
+                                         "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app." = "physicalLimitation",
+                                         "They do not have a device or equipment to access their digital accounts." = "noDeviceAccess",
+                                         "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app." = "cognitiveLimiation",
+                                         "Others (Please Specify)" = "others",
+                                         .default = Response
+                       ))
+cleaned_data4 <- cleaned_data4 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), 1, 0),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), 1, 0),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), 1, 0),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), 1, 0),
+    physical_limitations = ifelse(Response == "physicalLimitation", 1, 0),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", 1, 0),
+    no_device = ifelse(Response == "noDeviceAccess", 1, 0),
+    Others = ifelse(Response == "others", 1, 0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data4)
+
+```
+
+## Figure 10 (Q5.18 & Q6.37) (US)
+
+```{r}
+cleaned_data1$delegateType <- 'Finance'
+cleaned_data4$delegateType <- 'Medical'
+
+cleaned_data1 <- na.omit(cleaned_data1)
+cleaned_data4 <- na.omit(cleaned_data4)
+
+combined_data <- rbind(cleaned_data1, cleaned_data4)
+
+combined_counts <- combined_data %>%
+  group_by(Response, delegateType) %>%
+  summarise(Count = n()) %>%
+  ungroup()
+
+response_order <- c("lackAppFamiliarity", "taskDifficulty", "notUserFriendly", "physicalLimitation",
+                    "cognitiveLimiation", "thirdPartyConcerns", "noDeviceAccess", "others")
+
+combined_counts$Response <- factor(combined_counts$Response, levels = response_order)
+
+ggplot(combined_counts, aes(x=Response, y=Count, fill=delegateType)) +
+  geom_bar(stat='identity', position=position_dodge(width=0.9)) +
+  geom_text(aes(label=Count), vjust=-0.3, position=position_dodge(width=0.9), size=2.5) +
+  theme_minimal() +
+  theme(plot.margin = unit(c(1, 1, 4, 1), "lines")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))+
+  labs(x='Reasons for Assisting Delegators with Digital Services', y='Counts of Digital Proxies') +
+  scale_fill_manual(values=c('Finance'='darkgreen', 'Medical'='darkblue'))
+
+```
+
+
+# Q5.18 (FinanceManageReasons) (cleanded_data1) (SG)
+```{r}
+# Create test dataframe with only demographic predictors
+test.data.sg = sg_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2' )]
+```
+
+```{r}
+raw_digital_proxy<- mutate(test.data.sg,
+                       FinanceManageReasons_new = recode(FinanceManageReasons,
+                       "The app was not user-friendly for them" = "notUserFriendly",
+                       "They see using the app as a difficult task that should be avoided" = "taskDifficulty",
+                       "They have concerns about sharing their data with third parties" = "thirdPartyConcerns",
+                       "They are unfamiliar with using a technology device to access the app" = "lackAppFamiliarity",
+                       "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app" = "physicalLimitation",
+                       "They do not have a device or equipment to access their digital accounts" = "noDeviceAccess",
+                       "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app" = "cognitiveLimiation",
+                       "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app,Others (please specify)" = "physicalLimitation",
+                       "Others (please specify)" = "others",
+                       "Others (please specify)" = "others",
+                       .default = FinanceManageReasons
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceManageReasons,raw_digital_proxy$FinanceManageReasons_new)
+```
+
+```{r}
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data1 <- data.frame(
+  ID = 1:304,
+  Response = raw_digital_proxy$FinanceManageReasons_new
+)
+
+cleaned_data1 <- survey_data1 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), "Yes", "No"),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), "Yes", "No"),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), "Yes", "No"),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), "Yes", "No"),
+    physical_limitations = ifelse(Response == "physicalLimitation", "Yes", "No"),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", "Yes", "No"),
+    no_device = ifelse(Response == "noDeviceAccess", "Yes", "No"),
+    Others = ifelse(Response == "others", "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data1<- mutate(cleaned_data1,
+                       Response = recode(Response,
+                                         "The app was not user-friendly for them" = "notUserFriendly",
+                                         "They see using the app as a difficult task that should be avoided" = "taskDifficulty",
+                                         "They have concerns about sharing their data with third parties" = "thirdPartyConcerns",
+                                         "They are unfamiliar with using a technology device to access the app" = "lackAppFamiliarity",
+                                         "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app" = "physicalLimitation",
+                                         "They do not have a device or equipment to access their digital accounts" = "noDeviceAccess",
+                                         "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app" = "cognitiveLimiation",
+                                         "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app,Others (please specify)" = "physicalLimitation",
+                                         "Others (please specify)" = "others",
+                                         "Others (please specify)" = "others",
+                                         .default = Response
+                       ))
+cleaned_data1 <- cleaned_data1 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), 1, 0),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), 1, 0),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), 1, 0),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), 1, 0),
+    physical_limitations = ifelse(Response == "physicalLimitation", 1, 0),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", 1, 0),
+    no_device = ifelse(Response == "noDeviceAccess", 1, 0),
+    Others = ifelse(Response == "others", 1, 0)
+  ) %>%
+  group_by(ID)
+
+cleaned_data1 <- na.omit(cleaned_data1)
+
+print(cleaned_data1)
+```
+
+## Q6.37 (DigitalAssistReasons) (cleaned_data4) (SG)
+```{r}
+# raw_digital_proxy$DigitalAssistReasons
+raw_digital_proxy<- mutate(test.data.sg,
+                       DigitalAssistReasons_new = recode(DigitalAssistReasons,
+                      "The app was not user-friendly for them" = "notUserFriendly",
+                       "They see using the app as a difficult task that should be avoided." = "taskDifficulty",
+                       "They have concerns about sharing their data with third parties." = "thirdPartyConcerns",
+                       "They are unfamiliar with using a technology device to access the app." = "lackAppFamiliarity",
+                       "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app." = "physicalLimitation",
+                       "They do not have a device or equipment to access their digital accounts." = "noDeviceAccess",
+                       "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app." = "cognitiveLimiation",
+                       "Others (Please Specify)" = "others",
+                       .default = DigitalAssistReasons
+                       ))
+DigitalAssistReasons_data<-data.frame(raw_digital_proxy$DigitalAssistReasons,raw_digital_proxy$DigitalAssistReasons_new)
+```
+
+```{r}
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data4 <- data.frame(
+  ID = 1:304,
+  Response = raw_digital_proxy$DigitalAssistReasons_new
+)
+
+cleaned_data4 <- survey_data4 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), "Yes", "No"),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), "Yes", "No"),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), "Yes", "No"),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), "Yes", "No"),
+    physical_limitations = ifelse(Response == "physicalLimitation", "Yes", "No"),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", "Yes", "No"),
+    no_device = ifelse(Response == "noDeviceAccess", "Yes", "No"),
+    Others = ifelse(Response == "others", "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data4<- mutate(cleaned_data4,
+                       Response = recode(Response,
+                                        "The app was not user-friendly for them" = "notUserFriendly",
+                                         "They see using the app as a difficult task that should be avoided." = "taskDifficulty",
+                                         "They have concerns about sharing their data with third parties." = "thirdPartyConcerns",
+                                         "They are unfamiliar with using a technology device to access the app." = "lackAppFamiliarity",
+                                         "They have physical limitations (e.g., poor vision and poor motor skills) that constrain their ability to use the app." = "physicalLimitation",
+                                         "They do not have a device or equipment to access their digital accounts." = "noDeviceAccess",
+                                         "They have cognitive limitations (e.g., existing conditions and cognitive decline with age) that constrain their ability to use the app." = "cognitiveLimiation",
+                                         "Others (Please Specify)" = "others",
+                                         .default = Response
+                       ))
+cleaned_data4 <- cleaned_data4 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    not_user_friendly = ifelse(str_detect(Response, "notUserFriendly"), 1, 0),
+    difficult = ifelse(str_detect(Response, "taskDifficulty"), 1, 0),
+    concerns_data = ifelse(str_detect(Response, "thirdPartyConcerns"), 1, 0),
+    unfamiliar = ifelse(str_detect(Response, "lackAppFamiliarity"), 1, 0),
+    physical_limitations = ifelse(Response == "physicalLimitation", 1, 0),
+    cognitive_limiation = ifelse(Response == "cognitiveLimiation", 1, 0),
+    no_device = ifelse(Response == "noDeviceAccess", 1, 0),
+    Others = ifelse(Response == "others", 1, 0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data4)
+
+```
+
+
+## Figure 10 (Q5.18 & Q6.37) (SG)
+
+```{r}
+cleaned_data1$delegateType <- 'Finance'
+cleaned_data4$delegateType <- 'Medical'
+
+combined_data <- rbind(cleaned_data1, cleaned_data4)
+combined_data <- combined_data %>% filter(!is.na(Response) & Response != "NA")
+
+combined_counts <- combined_data %>%
+  group_by(Response, delegateType) %>%
+  summarise(Count = n()) %>%
+  ungroup()
+combined_counts <- combined_counts %>% filter(!is.na(Response) & Response != "NA")
+
+response_order <- c("lackAppFamiliarity", "taskDifficulty", "notUserFriendly", "physicalLimitation",
+                    "cognitiveLimiation", "thirdPartyConcerns", "noDeviceAccess", "others")
+
+combined_counts$Response <- factor(combined_counts$Response, levels = response_order)
+
+ggplot(combined_counts, aes(x=Response, y=Count, fill=delegateType)) +
+  geom_bar(stat='identity', position=position_dodge(width=0.9)) +
+  geom_text(aes(label=Count), vjust=-0.3, position=position_dodge(width=0.9), size=2.5) +
+  theme_minimal() +
+  theme(plot.margin = unit(c(1, 1, 4, 1), "lines")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))+
+  labs(x='Reasons for Assisting Delegators with Digital Services', y='Counts of Digital Proxies') +
+  scale_fill_manual(values=c('Finance'='darkgreen', 'Medical'='darkblue'))
+
+```
+
+
+## Figure 11 (Informal) (US)
+
+```{r}
+# us_financial <- test.data.us %>%
+#   filter(FinanceDelegate2 == "Assist-Informal" | FinanceDelegate2 == "Assist-formal")
+# df_summary <- us_financial %>%
+#   group_by(Age, Gender, FinanceDelegate2) %>%
+#   summarise(Count = n()) %>%
+#   ungroup() %>%
+#   mutate(Total = sum(Count), Percentage = (Count / Total) * 100)
+# 
+# count$Age <- factor(count$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# 
+# count_not_proxies$Age <- factor(count_not_proxies$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# 
+# us_financial$AgeGroup <- cut(us_financial$Age,
+#                    breaks = c(-Inf, 35, Inf), # adjust the breaks to create meaningful age groups
+#                    labels = c("Younger", "Older"))
+# 
+# df_summary$AgeGender <- with(df_summary, paste(Age, Gender, sep=":"))
+# df_summary$AgeGender <- factor(df_summary$AgeGender, levels = unique(df_summary$AgeGender))
+# 
+# # Now let's create the bar plot
+# ggplot(df_summary, aes(x=AgeGender, y=Percentage, fill=FinanceDelegate2)) +
+#   geom_bar(stat='identity', position='dodge') +
+#   geom_text(aes(label=sprintf("%.2f", Percentage)), vjust=-0.3, position=position_dodge(width=0.9), size=3) +
+#   scale_fill_manual(values=c("formal"="darkgreen", "informal"="lightgreen")) +
+#   theme_minimal() +
+#   labs(x="Finance Digital Proxy Practice", y="Percentage distribution across practice type") +
+#   scale_y_continuous(labels = scales::percent_format()) # This ensures that y-axis labels are formatted as percentages
+```
+
+```{r}
+# 95
+# older_female<-test.data.us%>%
+#   filter(test.data.us$AgeGender == "Older:Female")
+# # 237
+# yonger_female<-test.data.us%>%
+#   filter(test.data.us$AgeGender == "Younger:Female")
+```
+
+
+```{r}
+test.data.us = us_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2','FinanceJointAccount')]
+
+test.data.us$Age_new <- factor(test.data.us$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+test.data.us$Age_new <- ifelse(test.data.us$Age_new %in% c("60","65", "70"), "Older", "Younger")
+test.data.us$Gender_new <- factor(test.data.us$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+test.data.us$AgeGender <- with(test.data.us, paste(Age_new, Gender_new, sep=":"))
+us_formal <- test.data.us %>%
+  # filter(FinanceJointAccount == 0)%>%
+  filter(FinanceDelegate2 == "Assist-formal")
+us_informal <- test.data.us %>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+
+count <- aggregate(FinanceDelegate2 ~ AgeGender, data = us_formal, length)
+sum <- sum (table(us_formal$AgeGender))
+count$Proportion <- count$FinanceDelegate2 / sum * 100
+
+count_not <- aggregate(FinanceDelegate2 ~ AgeGender, data = us_informal, length)
+sum_not <- sum (table(us_informal$AgeGender))
+count_not$Proportion <- count_not$FinanceDelegate2 / sum_not * 100
+
+# count$Age <- factor(count$Age,levels = c(1:, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# count$Age <- ifelse(count$Age %in% c("60","65", "70"), "Older", "Younger")
+# count$Gender <- factor(count$Gender,levels = c(1, 2), labels = c("Female","Male"))
+# 
+# count_not$Age <- factor(count_not$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# count_not$Age <- ifelse(count_not$Age %in% c("60","65", "70"), "Older", "Younger")
+# count_not$Gender <- factor(count_not$Gender,levels = c(1, 2), labels = c("Female","Male"))
+# count_not$AgeGender <- with(count_not, paste(Age, Gender, sep=":"))
+
+
+count$Type <- 'Formal'
+count_not$Type <- 'Informal'
+
+combined_data <- rbind(count,count_not)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+p <- ggplot(combined_data, aes(x = AgeGender, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice",
+       y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+
+```
+
+
+
+```{r}
+# # Calculate the total number of individuals
+# sg_proxies <- test.data.sg %>%
+#   filter(FinanceDelegate1 == 1)
+# sg_not_proxies <- test.data.sg %>%
+#   filter(FinanceDelegate1 == 0)
+# 
+# count <- aggregate(FinanceDelegate1 ~ Age, data = sg_proxies, length)
+# sum <- sum (table(sg_proxies$Age))
+# count$Proportion <- count$FinanceDelegate1 / sum * 100
+# 
+# count_not_proxies <- aggregate(FinanceDelegate1 ~ Age, data = sg_not_proxies, length)
+# sum_not <- sum (table(sg_not_proxies$Age))
+# count_not_proxies$Proportion <- count_not_proxies$FinanceDelegate1 / sum_not * 100
+# 
+# count$Type <- 'Financial Proxies'
+# count_not_proxies$Type <- 'Non-Proxies'
+# 
+# # dataframe
+# count$Age <- factor(count$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# 
+# count_not_proxies$Age <- factor(count_not_proxies$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# 
+# combined_data <- rbind(count,count_not_proxies)
+# 
+# p <- ggplot(combined_data, aes(x = Age, y = Proportion, group = Type)) +
+#   geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("Financial Proxies" = "lightblue", "Non-Proxies" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("Financial Proxies" = "blue", "Non-Proxies" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Financial Delegation by Age",
+#        x = "Age",
+#        y = "Percentage of Financial Delegation") +
+#   guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+# 
+# print(p)
+
+```
+
+## build based on modelFinLevel1_new
+```{r}
+test.data.us = us_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2','DigitalAssistAccessWays_institution' )]
+
+# fitted probabilities
+test.data.us$Prob_MedicalDelegate = modelFinLevel1_new$fitted.values
+
+test.data.us$Age_new <- factor(test.data.us$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+test.data.us$Age_new <- factor(ifelse(test.data.us$Age_new %in% c("60","65", "70"), "Older", "Younger"))
+test.data.us$Gender_new <- factor(test.data.us$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+test.data.us$AgeGender <- with(test.data.us, interaction(Age_new, Gender_new, sep=":"))
+
+us_formal <- test.data.us %>%
+  filter(DigitalAssistAccessWays_institution =="No") %>%
+  filter(FinanceDelegate2 == "Assist-formal")
+us_informal <- test.data.us %>%
+  filter(DigitalAssistAccessWays_institution =="No") %>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+
+count <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_formal, mean)
+count_not <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_informal, mean)
+
+# convert probabilities to percentages
+count$Prob_MedicalDelegate <- count$Prob_MedicalDelegate * 100
+count_not$Prob_MedicalDelegate <- count_not$Prob_MedicalDelegate * 100
+
+count$Type <- 'Formal'
+count_not$Type <- 'Informal'
+
+combined_data <- rbind(count,count_not)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+
+p <- ggplot(combined_data, aes(x = AgeGender, y = Prob_MedicalDelegate, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice",
+       y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+```
+
+```{r}
+# # fitted probabilities
+# test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
+# test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+# 
+# # aggregate IADL for US and SG
+# IADL_percentage_us <- aggregate(Prob_MedicalDelegate ~ IADL, data = test.data.us, mean)
+# IADL_percentage_sg <- aggregate(Prob_MedicalDelegate ~ IADL, data = test.data.sg, mean)
+# 
+# # convert probabilities to percentages
+# IADL_percentage_us$Prob_MedicalDelegate <- IADL_percentage_us$Prob_MedicalDelegate * 100
+# IADL_percentage_sg$Prob_MedicalDelegate <- IADL_percentage_sg$Prob_MedicalDelegate * 100
+# 
+# IADL_percentage_us$Country <- 'US'
+# IADL_percentage_sg$Country <- 'SG'
+# # dataframe
+# combined_data <- rbind(IADL_percentage_us, IADL_percentage_sg)
+# combined_data$IADL <- as.numeric(as.character(combined_data$IADL))
+# 
+# p <- ggplot(combined_data, aes(x = IADL, y = Prob_MedicalDelegate, group = Country)) +
+#   geom_bar(aes(fill = Country), stat = 'identity', position = position_dodge(width = 0.8)) +
+#   scale_fill_manual(values = c("US" = "lightblue", "SG" = "lightgreen")) +  # colors for bars
+#   geom_smooth(aes(color = Country), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+#   geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Country),
+#             position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+#   scale_color_manual(values = c("US" = "blue", "SG" = "darkgreen")) +  # colors for trend lines
+#   theme_minimal() +
+#   labs(title = "Medical Delegation by IADL",
+#        x = "IADL",
+#        y = "Percentage of Medical Delegation") +
+#   guides(fill = guide_legend(title = "Country"), color = guide_legend(title = "Country"))
+# 
+# print(p)
+```
+
+```{r}
+# fitted probabilities
+test.data.us$Prob_MedicalDelegate = modelFinLevel1_new$fitted.values
+# Let's first correct the age grouping
+test.data.us$Age <- as.numeric(as.character(test.data.us$Age)) # Ensure 'Age' is numeric
+test.data.us$Age_new <- ifelse(test.data.us$Age > 60, "Older", "Younger") # Recode into 'Older' and 'Younger'
+test.data.us$Age_new <- factor(test.data.us$Age_new) # Convert to factor
+
+# Recode 'Gender' to be a factor with levels 'Female' and 'Male'
+test.data.us$Gender_new <- factor(test.data.us$Gender, levels = c(1, 2), labels = c("Female", "Male"))
+
+# Create a combined 'AgeGender' factor
+test.data.us$AgeGender <- with(test.data.us, interaction(Age_new, Gender_new, sep=":"))
+
+# Now calculate the mean probabilities for formal and informal separately
+us_formal <- subset(test.data.us, FinanceDelegate2 == "Assist-formal")
+us_informal <- subset(test.data.us, FinanceDelegate2 == "Assist-Informal")
+
+count_formal <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_formal, mean)
+count_informal <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_informal, mean)
+
+# Convert probabilities to percentages
+count_formal$Prob_MedicalDelegate <- count_formal$Prob_MedicalDelegate * 100
+count_informal$Prob_MedicalDelegate <- count_informal$Prob_MedicalDelegate * 100
+
+# Label the type of practice
+count_formal$Type <- 'Formal'
+count_informal$Type <- 'Informal'
+
+# Combine the data and order the factors to match the plot
+combined_data <- rbind(count_formal, count_informal)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+# Create the bar plot
+ggplot(combined_data, aes(x = AgeGender, y = Prob_MedicalDelegate, fill = Type)) +
+  geom_bar(stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +
+  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate)),
+            position = position_dodge(width = 0.8), vjust = 1.5, size = 3) +
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice", y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"))
+
+# Print the plot
+print(p)
+
+```
+
+
+
+## Figure 11 (Informal) (SG)
+```{r}
+test.data.sg = sg_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2','FinanceJointAccount')]
+
+test.data.sg$Age_new <- factor(test.data.sg$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+test.data.sg$Age_new <- ifelse(test.data.sg$Age_new %in% c("60","65", "70"), "Older", "Younger")
+test.data.sg$Gender_new <- factor(test.data.sg$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+test.data.sg$AgeGender <- with(test.data.sg, paste(Age_new, Gender_new, sep=":"))
+us_formal <- test.data.sg %>%
+  # filter(FinanceJointAccount == 0)%>%
+  filter(FinanceDelegate2 == "Assist-formal")
+us_informal <- test.data.sg %>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+
+count <- aggregate(FinanceDelegate2 ~ AgeGender, data = us_formal, length)
+sum <- sum (table(us_formal$AgeGender))
+count$Proportion <- count$FinanceDelegate2 / sum * 100
+
+count_not <- aggregate(FinanceDelegate2 ~ AgeGender, data = us_informal, length)
+sum_not <- sum (table(us_informal$AgeGender))
+count_not$Proportion <- count_not$FinanceDelegate2 / sum_not * 100
+
+# count$Age <- factor(count$Age,levels = c(1:, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# count$Age <- ifelse(count$Age %in% c("60","65", "70"), "Older", "Younger")
+# count$Gender <- factor(count$Gender,levels = c(1, 2), labels = c("Female","Male"))
+# 
+# count_not$Age <- factor(count_not$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+#                            labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+# count_not$Age <- ifelse(count_not$Age %in% c("60","65", "70"), "Older", "Younger")
+# count_not$Gender <- factor(count_not$Gender,levels = c(1, 2), labels = c("Female","Male"))
+# count_not$AgeGender <- with(count_not, paste(Age, Gender, sep=":"))
+
+
+count$Type <- 'Formal'
+count_not$Type <- 'Informal'
+
+combined_data <- rbind(count,count_not)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+p <- ggplot(combined_data, aes(x = AgeGender, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice",
+       y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+```
+
+## build based on modelFinLevel3_new
+```{r}
+test.data.sg = sg_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2' )]
+
+# fitted probabilities
+test.data.sg$Prob_MedicalDelegate = modelFinLevel3_new$fitted.values
+
+test.data.sg$Age_new <- factor(test.data.sg$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+test.data.sg$Age_new <- factor(ifelse(test.data.sg$Age_new %in% c("60","65", "70"), "Older", "Younger"))
+test.data.sg$Gender_new <- factor(test.data.sg$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+test.data.sg$AgeGender <- with(test.data.sg, interaction(Age_new, Gender_new, sep=":"))
+
+us_formal <- test.data.sg %>%
+  filter(FinanceDelegate2 == "Assist-formal")
+us_informal <- test.data.sg %>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+
+count <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_formal, mean)
+count_not <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_informal, mean)
+
+# convert probabilities to percentages
+count$Prob_MedicalDelegate <- count$Prob_MedicalDelegate * 100
+count_not$Prob_MedicalDelegate <- count_not$Prob_MedicalDelegate * 100
+
+count$Type <- 'Formal'
+count_not$Type <- 'Informal'
+
+combined_data <- rbind(count,count_not)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+
+p <- ggplot(combined_data, aes(x = AgeGender, y = Prob_MedicalDelegate, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Formal" = "lightgreen", "Informal" = "darkgreen")) +  # colors for trend lines
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice",
+       y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+```
+
+
+\newpage
+
+# Figure 12
+## medical model for US
+```{r}
+test.data.us = us_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2' )]
+
+# fitted probabilities
+test.data.us$Prob_MedicalDelegate = modelMedLevel1_new$fitted.values
+
+test.data.us$Age_new <- factor(test.data.us$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+test.data.us$Age_new <- factor(ifelse(test.data.us$Age_new %in% c("60","65", "70"), "Older", "Younger"))
+test.data.us$Gender_new <- factor(test.data.us$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+test.data.us$AgeGender <- with(test.data.us, interaction(Age_new, Gender_new, sep=":"))
+
+us_formal <- test.data.us %>%
+  filter(MedicalDelegate2 == "Assist-formal")
+us_informal <- test.data.us %>%
+  filter(MedicalDelegate2 == "Assist-informal")
+
+count <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_formal, mean)
+count_not <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_informal, mean)
+
+# convert probabilities to percentages
+count$Prob_MedicalDelegate <- count$Prob_MedicalDelegate * 100
+count_not$Prob_MedicalDelegate <- count_not$Prob_MedicalDelegate * 100
+
+count$Type <- 'Formal'
+count_not$Type <- 'Informal'
+
+combined_data <- rbind(count,count_not)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+
+p <- ggplot(combined_data, aes(x = AgeGender, y = Prob_MedicalDelegate, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightblue", "Informal" = "darkblue")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Formal" = "lightblue", "Informal" = "darkblue")) +  # colors for trend lines
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice",
+       y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+```
+
+
+## Figure 12 (Informal Medical) (SG)
+```{r}
+test.data.sg = sg_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2','FinanceJointAccount')]
+
+test.data.sg$Age_new <- factor(test.data.sg$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+test.data.sg$Age_new <- ifelse(test.data.sg$Age_new %in% c("60","65", "70"), "Older", "Younger")
+test.data.sg$Gender_new <- factor(test.data.sg$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+test.data.sg$AgeGender <- with(test.data.sg, paste(Age_new, Gender_new, sep=":"))
+us_formal <- test.data.sg %>%
+  # filter(FinanceJointAccount == 0)%>%
+  filter(MedicalDelegate2 == "Assist-formal")
+us_informal <- test.data.sg %>%
+  filter(MedicalDelegate2 == "Assist-informal")
+
+count <- aggregate(MedicalDelegate2 ~ AgeGender, data = us_formal, length)
+sum <- sum (table(us_formal$AgeGender))
+count$Proportion <- count$MedicalDelegate2 / sum * 100
+
+count_not <- aggregate(MedicalDelegate2 ~ AgeGender, data = us_informal, length)
+sum_not <- sum (table(us_informal$AgeGender))
+count_not$Proportion <- count_not$MedicalDelegate2 / sum_not * 100
+
+count$Type <- 'Formal'
+count_not$Type <- 'Informal'
+
+combined_data <- rbind(count,count_not)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+p <- ggplot(combined_data, aes(x = AgeGender, y = Proportion, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightblue", "Informal" = "darkblue")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Proportion), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Formal" = "lightblue", "Informal" = "darkblue")) +  # colors for trend lines
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice",
+       y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+```
+
+
+## build based on modelFinLevel3_new
+```{r}
+test.data.sg = sg_filtered_data[,c('Country','Age','Income','Housing','Gender','Education','Employment','Ethnicity','Siblings','Marital','FinanceManageReasons','FinanceManageReasonsOthers','FinanceLoginWays','FinanceServiceWays','DigitalAssistReasons','DigitalAssistReasonsOthers','DigitalAssistAccessWays','DigitalAssistUseWays','FinanceDelegate1','FinanceDelegate2','MedicalDelegate1','MedicalDelegate2' )]
+
+# fitted probabilities
+test.data.sg$Prob_MedicalDelegate = modelMedLevel3_new$fitted.values
+
+test.data.sg$Age_new <- factor(test.data.sg$Age,levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                           labels = c("21","25", "30", "35", "40", "45", "50", "55", "60", "65", "70"))
+test.data.sg$Age_new <- factor(ifelse(test.data.sg$Age_new %in% c("60","65", "70"), "Older", "Younger"))
+test.data.sg$Gender_new <- factor(test.data.sg$Gender,levels = c(1, 2), labels = c("Female","Male"))
+
+test.data.sg$AgeGender <- with(test.data.sg, interaction(Age_new, Gender_new, sep=":"))
+
+us_formal <- test.data.sg %>%
+  filter(MedicalDelegate2 == "Assist-formal")
+us_informal <- test.data.sg %>%
+  filter(MedicalDelegate2 == "Assist-informal")
+
+count <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_formal, mean)
+count_not <- aggregate(Prob_MedicalDelegate ~ AgeGender, data = us_informal, mean)
+
+# convert probabilities to percentages
+count$Prob_MedicalDelegate <- count$Prob_MedicalDelegate * 100
+count_not$Prob_MedicalDelegate <- count_not$Prob_MedicalDelegate * 100
+
+count$Type <- 'Formal'
+count_not$Type <- 'Informal'
+
+combined_data <- rbind(count,count_not)
+combined_data$AgeGender <- factor(combined_data$AgeGender,
+                                  levels = c("Younger:Male","Younger:Female","Older:Male", "Older:Female"))
+
+
+p <- ggplot(combined_data, aes(x = AgeGender, y = Prob_MedicalDelegate, group = Type)) +
+  geom_bar(aes(fill = Type), stat = 'identity', position = position_dodge(width = 0.8)) +
+  scale_fill_manual(values = c("Formal" = "lightblue", "Informal" = "darkblue")) +  # colors for bars
+  geom_smooth(aes(color = Type), method = "lm", se = FALSE, linetype = "dashed", size = 1) + # trend lines
+  geom_text(aes(label = sprintf("%.1f%%", Prob_MedicalDelegate), fill = Type),
+            position = position_dodge(width = 0.8), vjust = -0.5, size = 3) +
+  scale_color_manual(values = c("Formal" = "lightblue", "Informal" = "darkblue")) +  # colors for trend lines
+  theme_minimal() +
+  labs(x = "Financial Digital Delegation Practice",
+       y = "Percentage distribution across practice type") +
+  guides(fill = guide_legend(title = "Type"), color = guide_legend(title = "Type"))
+
+print(p)
+```
+
+
+\newpage
+
+# unique informal(n=146)
+
+```{r}
+finance_informal<-test.data.us%>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+medical_informal<-test.data.us%>%
+  filter(MedicalDelegate2 == "Assist-informal")
+```
+
+# Q5.19 (FinanceLoginWays) (cleanded_data2) (US)
+
+```{r}
+# raw_digital_proxy$FinanceLoginWays
+raw_digital_proxy<- mutate(finance_informal,
+                       FinanceLoginWays_new = recode(FinanceLoginWays,
+                       "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage their online account(s)" = "proxy account",
+                       .default = FinanceLoginWays
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceLoginWays,raw_digital_proxy$FinanceLoginWays_new)
+```
+
+```{r}
+
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data2 <- data.frame(
+  ID = 1:89,
+  Response = raw_digital_proxy$FinanceLoginWays_new
+)
+
+cleaned_data2 <- survey_data2 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), "Yes", "No"),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), "Yes", "No"),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), "Yes", "No"),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data2<- mutate(cleaned_data2,
+                       Response = recode(Response,
+                                         "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage their online account(s)" = "proxy account",
+                                         .default = Response
+                       ))
+cleaned_data2 <- cleaned_data2 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), 1,0),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), 1,0),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), 1,0),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data2)
+
+```
+
+## Q6.38 (DigitalAssistAccessWays) (cleaned_data5) (US)
+
+```{r}
+# raw_digital_proxy$DigitalAssistAccessWays
+raw_digital_proxy<- mutate(medical_informal,
+                       DigitalAssistAccessWays_new = recode(DigitalAssistAccessWays,
+                       "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage manage their online account(s)" = "proxy account",
+                       .default = DigitalAssistAccessWays
+                       ))
+DigitalAssistAccessWays_data<-data.frame(raw_digital_proxy$DigitalAssistAccessWays,raw_digital_proxy$DigitalAssistAccessWays_new)
+```
+
+```{r}
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data5 <- data.frame(
+  ID = 1:89,
+  Response = raw_digital_proxy$DigitalAssistAccessWays_new
+)
+
+cleaned_data5 <- survey_data5 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), "Yes", "No"),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), "Yes", "No"),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), "Yes", "No"),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data5<- mutate(cleaned_data5,
+                       Response = recode(Response,
+                                         "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage manage their online account(s)" = "proxy account",
+                                         .default = Response
+                       ))
+cleaned_data5 <- cleaned_data5 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), 1,0),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), 1,0),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), 1,0),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data5)
+
+```
+
+## Figure 13 (Q5.19 & Q6.38) (US)
+```{r}
+cleaned_data2$delegateType <- 'Finance'
+cleaned_data5$delegateType <- 'Medical'
+
+cleaned_data2 <- na.omit(cleaned_data2)
+cleaned_data5 <- na.omit(cleaned_data5)
+
+combined_data <- rbind(cleaned_data2, cleaned_data5)
+
+combined_counts <- combined_data %>%
+  group_by(Response, delegateType) %>%
+  summarise(Count = n()) %>%
+  ungroup()
+
+response_order <- c("haveKnowledge", "noKnowledge", "requireBiometrics","proxy account")
+
+combined_counts$Response <- factor(combined_counts$Response, levels = response_order)
+
+ggplot(combined_counts, aes(x=Response, y=Count, fill=delegateType)) +
+  geom_bar(stat='identity', position=position_dodge(width=0.9)) +
+  geom_text(aes(label=Count), vjust=-0.3, position=position_dodge(width=0.9), size=2.5) +
+  theme_minimal() +
+  theme(plot.margin = unit(c(1, 1, 4, 1), "lines")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))+
+  labs(x='Ways of Login to Digital Services for Donor', y='Counts of Informal Digital Proxies') +
+  scale_fill_manual(values=c('Finance'='darkgreen', 'Medical'='darkblue'))
+
+```
+
+
+# unique informal (SG)
+
+```{r}
+finance_informal<-test.data.sg%>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+medical_informal<-test.data.sg%>%
+  filter(MedicalDelegate2 == "Assist-informal")
+```
+
+# Q5.19 (FinanceLoginWays) (cleanded_data2) (SG)
+
+```{r}
+# raw_digital_proxy$FinanceLoginWays
+raw_digital_proxy<- mutate(finance_informal,
+                       FinanceLoginWays_new = recode(FinanceLoginWays,
+                       "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage their online account(s)" = "proxy account",
+                       .default = FinanceLoginWays
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceLoginWays,raw_digital_proxy$FinanceLoginWays_new)
+```
+
+```{r}
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data2 <- data.frame(
+  ID = 1:118,
+  Response = raw_digital_proxy$FinanceLoginWays_new
+)
+
+cleaned_data2 <- survey_data2 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), "Yes", "No"),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), "Yes", "No"),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), "Yes", "No"),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data2<- mutate(cleaned_data2,
+                       Response = recode(Response,
+                                         "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage their online account(s)" = "proxy account",
+                                         .default = Response
+                       ))
+cleaned_data2 <- cleaned_data2 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), 1,0),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), 1,0),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), 1,0),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data2)
+
+```
+
+## Q6.38 (DigitalAssistAccessWays) (cleaned_data5) (SG)
+
+```{r}
+# raw_digital_proxy$DigitalAssistAccessWays
+raw_digital_proxy<- mutate(medical_informal,
+                       DigitalAssistAccessWays_new = recode(DigitalAssistAccessWays,
+                       "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage manage their online account(s)" = "proxy account",
+                       .default = DigitalAssistAccessWays
+                       ))
+DigitalAssistAccessWays_data<-data.frame(raw_digital_proxy$DigitalAssistAccessWays,raw_digital_proxy$DigitalAssistAccessWays_new)
+```
+
+```{r}
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data5 <- data.frame(
+  ID = 1:47,
+  Response = raw_digital_proxy$DigitalAssistAccessWays_new
+)
+
+cleaned_data5 <- survey_data5 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), "Yes", "No"),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), "Yes", "No"),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), "Yes", "No"),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data5<- mutate(cleaned_data5,
+                       Response = recode(Response,
+                                         "I know the username and password for their online account(s)" = "haveKnowledge",
+                       "The adult uses their fingerprint (or other biometrics) to log in" = "requireBiometrics",
+                       "The adult logs in with a username and password and I help them (I don't know the username and password)" = "noKnowledge",
+                       "The institution has given me my own separate login and password to help manage manage their online account(s)" = "proxy account",
+                                         .default = Response
+                       ))
+cleaned_data5 <- cleaned_data5 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    username_password = ifelse(str_detect(Response, "haveKnowledge"), 1,0),
+    fingerprint = ifelse(str_detect(Response, "requireBiometrics"), 1,0),
+    donot_know = ifelse(str_detect(Response, "noKnowledge"), 1,0),
+    proxy_account = ifelse(str_detect(Response, "proxy account"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data5)
+
+```
+
+## Figure 13 (Q5.19 & Q6.38) (SG)
+```{r}
+cleaned_data2$delegateType <- 'Finance'
+cleaned_data5$delegateType <- 'Medical'
+
+cleaned_data2 <- na.omit(cleaned_data2)
+cleaned_data5 <- na.omit(cleaned_data5)
+
+combined_data <- rbind(cleaned_data2, cleaned_data5)
+
+combined_counts <- combined_data %>%
+  group_by(Response, delegateType) %>%
+  summarise(Count = n()) %>%
+  ungroup()
+
+response_order <- c("haveKnowledge", "noKnowledge", "requireBiometrics","proxy account")
+
+combined_counts$Response <- factor(combined_counts$Response, levels = response_order)
+
+ggplot(combined_counts, aes(x=Response, y=Count, fill=delegateType)) +
+  geom_bar(stat='identity', position=position_dodge(width=0.9)) +
+  geom_text(aes(label=Count), vjust=-0.3, position=position_dodge(width=0.9), size=2.5) +
+  theme_minimal() +
+  theme(plot.margin = unit(c(1, 1, 4, 1), "lines")) +
+  theme(axis.text.x = element_text(hjust = 1, size = 8))+
+  labs(x='Ways of Login to Digital Services for Donor', y='Counts of Informal Digital Proxies') +
+  scale_fill_manual(values=c('Finance'='darkgreen', 'Medical'='darkblue'))
+
+```
+
+
+
+\newpage
+
+# unique informal
+```{r}
+finance_informal<-test.data.us%>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+medical_informal<-test.data.us%>%
+  filter(MedicalDelegate2 == "Assist-informal")
+```
+
+
+# Q5.20 (FinanceServiceWays) (cleanded_data3) (US)
+
+```{r}
+# raw_digital_proxy$FinanceServiceWays
+raw_digital_proxy<- mutate(finance_informal,
+                       FinanceServiceWays_new = recode(FinanceServiceWays,
+                       "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                       .default = FinanceServiceWays
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceServiceWays,raw_digital_proxy$FinanceServiceWays_new)
+```
+
+```{r}
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data3 <- data.frame(
+  ID = 1:89,
+  Response = raw_digital_proxy$FinanceServiceWays_new
+)
+
+cleaned_data3 <- survey_data3 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), "Yes", "No"),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), "Yes", "No"),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), "Yes", "No"),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), "Yes", "No"),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data3<- mutate(cleaned_data3,
+                       Response = recode(Response,
+                                        "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                                         .default = Response
+                       ))
+cleaned_data3 <- cleaned_data3 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), 1,0),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), 1,0),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), 1,0),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), 1,0),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data3)
+
+```
+
+
+## Q6.39 (DigitalAssistUseWays) (cleaned_data6) (US)
+```{r}
+# raw_digital_proxy$DigitalAssistUseWays
+raw_digital_proxy<- mutate(medical_informal,
+                       DigitalAssistUseWays_new = recode(DigitalAssistUseWays,
+                       "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                       .default = DigitalAssistUseWays
+                       ))
+DigitalAssistUseWays_data<-data.frame(raw_digital_proxy$DigitalAssistUseWays,raw_digital_proxy$DigitalAssistUseWays_new)
+```
+
+```{r}
+
+survey_data6 <- data.frame(
+  ID = 1:89,
+  Response = raw_digital_proxy$DigitalAssistUseWays_new
+)
+
+cleaned_data6 <- survey_data6 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), "Yes", "No"),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), "Yes", "No"),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), "Yes", "No"),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), "Yes", "No"),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data6<- mutate(cleaned_data6,
+                       Response = recode(Response,
+                                        "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                                         .default = Response
+                       ))
+cleaned_data6 <- cleaned_data6 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), 1,0),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), 1,0),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), 1,0),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), 1,0),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data6)
+
+```
+
+## Figure 14 (Q5.20 & Q6.39) (US)
+```{r}
+cleaned_data3$delegateType <- 'Finance'
+cleaned_data6$delegateType <- 'Medical'
+
+cleaned_data3 <- na.omit(cleaned_data3)
+cleaned_data6 <- na.omit(cleaned_data6)
+
+combined_data <- rbind(cleaned_data3, cleaned_data6)
+
+combined_counts <- combined_data %>%
+  group_by(Response, delegateType) %>%
+  summarise(Count = n()) %>%
+  ungroup()
+
+response_order <- c("partialHelp", "ongoingAssistance", "usageWithPresence","usageWithoutPresence","Not Applicable")
+
+combined_counts$Response <- factor(combined_counts$Response, levels = response_order)
+
+ggplot(combined_counts, aes(x=Response, y=Count, fill=delegateType)) +
+  geom_bar(stat='identity', position=position_dodge(width=0.9)) +
+  geom_text(aes(label=Count), vjust=-0.3, position=position_dodge(width=0.9), size=2.5) +
+  theme_minimal() +
+  theme(plot.margin = unit(c(1, 1, 4, 1), "lines")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))+
+  labs(x='Ways of Using the Digital Services for Delegator ', y='Counts of Informal Digital Proxies') +
+  scale_fill_manual(values=c('Finance'='darkgreen', 'Medical'='darkblue'))
+
+```
+
+
+# unique informal
+
+```{r}
+finance_informal<-test.data.sg%>%
+  filter(FinanceDelegate2 == "Assist-Informal")
+medical_informal<-test.data.sg%>%
+  filter(MedicalDelegate2 == "Assist-informal")
+```
+
+
+# Q5.20 (FinanceServiceWays) (cleanded_data3) (SG)
+
+```{r}
+# raw_digital_proxy$FinanceServiceWays
+raw_digital_proxy<- mutate(finance_informal,
+                       FinanceServiceWays_new = recode(FinanceServiceWays,
+                       "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                       .default = FinanceServiceWays
+                       ))
+FinanceManageReasons_data<-data.frame(raw_digital_proxy$FinanceServiceWays,raw_digital_proxy$FinanceServiceWays_new)
+```
+
+```{r}
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data3 <- data.frame(
+  ID = 1:118,
+  Response = raw_digital_proxy$FinanceServiceWays_new
+)
+
+cleaned_data3 <- survey_data3 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), "Yes", "No"),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), "Yes", "No"),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), "Yes", "No"),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), "Yes", "No"),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data3<- mutate(cleaned_data3,
+                       Response = recode(Response,
+                                        "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                                         .default = Response
+                       ))
+cleaned_data3 <- cleaned_data3 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), 1,0),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), 1,0),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), 1,0),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), 1,0),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data3)
+
+```
+
+
+## Q6.39 (DigitalAssistUseWays) (cleaned_data6) (SG)
+```{r}
+# raw_digital_proxy$DigitalAssistUseWays
+raw_digital_proxy<- mutate(medical_informal,
+                       DigitalAssistUseWays_new = recode(DigitalAssistUseWays,
+                       "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                       .default = DigitalAssistUseWays
+                       ))
+DigitalAssistUseWays_data<-data.frame(raw_digital_proxy$DigitalAssistUseWays,raw_digital_proxy$DigitalAssistUseWays_new)
+```
+
+```{r}
+
+survey_data6 <- data.frame(
+  ID = 1:47,
+  Response = raw_digital_proxy$DigitalAssistUseWays_new
+)
+
+cleaned_data6 <- survey_data6 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), "Yes", "No"),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), "Yes", "No"),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), "Yes", "No"),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), "Yes", "No"),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data6<- mutate(cleaned_data6,
+                       Response = recode(Response,
+                                        "I offer some help, but the person does it mostly independently" = "partialHelp",
+                       "I provide ongoing assistance while next to the person" = "ongoingAssistance",
+                       "I use the person's account on their behalf, while they are present" = "usageWithPresence",
+                       "I use the person's account on their behalf, even when they are not present" = "usageWithoutPresence",
+                       "Not Applicable" = "Not Applicable",
+                                         .default = Response
+                       ))
+cleaned_data6 <- cleaned_data6 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    guidance = ifelse(str_detect(Response, "partialHelp"), 1,0),
+    ongoing_assistance = ifelse(str_detect(Response, "ongoingAssistance"), 1,0),
+    in_person_help = ifelse(str_detect(Response, "usageWithPresence"), 1,0),
+    unsupervised_help = ifelse(str_detect(Response, "usageWithoutPresence"), 1,0),
+    Not_Applicable = ifelse(str_detect(Response, "Not Applicable"), 1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data6)
+
+```
+
+## Figure 14 (Q5.20 & Q6.39) (SG)
+```{r}
+cleaned_data3$delegateType <- 'Finance'
+cleaned_data6$delegateType <- 'Medical'
+
+cleaned_data3 <- na.omit(cleaned_data3)
+cleaned_data6 <- na.omit(cleaned_data6)
+
+combined_data <- rbind(cleaned_data3, cleaned_data6)
+
+combined_counts <- combined_data %>%
+  group_by(Response, delegateType) %>%
+  summarise(Count = n()) %>%
+  ungroup()
+
+response_order <- c("partialHelp", "ongoingAssistance", "usageWithPresence","usageWithoutPresence","Not Applicable")
+
+combined_counts$Response <- factor(combined_counts$Response, levels = response_order)
+
+ggplot(combined_counts, aes(x=Response, y=Count, fill=delegateType)) +
+  geom_bar(stat='identity', position=position_dodge(width=0.9)) +
+  geom_text(aes(label=Count), vjust=-0.3, position=position_dodge(width=0.9), size=2.5) +
+  theme_minimal() +
+  theme(plot.margin = unit(c(1, 1, 4, 1), "lines")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))+
+  labs(x='Ways of Using the Digital Services for Delegator ', y='Counts of Informal Digital Proxies') +
+  scale_fill_manual(values=c('Finance'='darkgreen', 'Medical'='darkblue'))
+
+```
+
+
+
+
+\newpage
+
+# CI (DigitalAssistReasonsOthers) (cleanded_data8) (US)
+
+```{r}
+# raw_digital_proxy$DigitalAssistReasonsOthers
+raw_digital_proxy<- mutate(test.data.us,
+                       DigitalAssistReasonsOthers_new = recode(DigitalAssistReasonsOthers,
+                       "Just to clarify and/or assist with information." = "clarify",
+                       "autism and anxiety" = "anxiety",
+                       "Just too frightened and overwhelmed to deal with it themselves in the time available" = "anxiety",
+                       "NA" = "NA",
+                       .default = DigitalAssistReasonsOthers
+                       ))
+```
+
+```{r}
+# Sample data frame with a multiple-choice variable named 'Response'
+survey_data8 <- data.frame(
+  ID = 1:657,
+  Response = raw_digital_proxy$DigitalAssistReasonsOthers_new
+)
+
+cleaned_data8 <- survey_data8 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    clarify = ifelse(str_detect(Response, "clarify"), "Yes", "No"),
+    anxiety = ifelse(str_detect(Response, "anxiety"), "Yes", "No")
+  ) %>%
+  group_by(ID)
+
+cleaned_data8<- mutate(cleaned_data8,
+                       Response = recode(Response,
+                                        "Just to clarify and/or assist with information." = "clarify",
+                       "autism and anxiety" = "anxiety",
+                       "Just too frightened and overwhelmed to deal with it themselves in the time available" = "anxiety",
+                       "NA" = "NA",
+                                         .default = Response
+                       ))
+cleaned_data8 <- cleaned_data8 %>%
+  separate_rows(Response, sep = "\\s*\\|\\s*") %>%
+  mutate(
+    clarify = ifelse(str_detect(Response, "clarify"), 1,0),
+    anxiety = ifelse(str_detect(Response, "anxiety"),1,0)
+  ) %>%
+  group_by(ID)
+
+print(cleaned_data8)
+
+```
+
+
+
+
 
 
